@@ -1,6 +1,6 @@
 let resultBCSV = null
 let resultNameBCSV = null
-let inFileTypesBCSV = ["bcsv"]
+let inFileTypesBCSV = ["bcsv", "banmt", "bcam", "pa", "tbl"]
 let outFileTypeBCSV = "csv"
 async function decompressFileFromBCSV () {
     let file = await importFile(inFileTypesBCSV)

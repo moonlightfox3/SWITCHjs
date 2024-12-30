@@ -53,12 +53,13 @@ function exportZip_parseObj (zip, obj) {
     }
 }
 
-function getFileType (data) {
+function getFileType (data, dataExt) {
     let name = null
     let ext = null
 
     if (getStr(data, 0, 4) == "Yaz0") {
-        name = `Yaz0`
+        let mode = "BE"
+        name = `Yaz0_${mode}`
         ext = "szs"
     }
     
@@ -93,6 +94,14 @@ function getFileType (data) {
         name = `BYML_${mode}_V${ver}`
         ext = "byml"
     }
+
+
+    else if (dataExt == "bcsv" || dataExt == "banmt" || dataExt == "bcam" || dataExt == "pa" || dataExt == "tbl") {
+        let mode = "LE"
+        name = `BCSV_${mode}`
+        ext = dataExt
+    }
+
     
     else {
         name = "?"
