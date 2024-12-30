@@ -3,5 +3,5 @@
 
 \
 \
-*This repo uses the library JSZip by [https://github.com/Stuk](https://github.com/Stuk).*  
+*This repo uses the library [JSZip](https://stuk.github.io/jszip/) by [https://github.com/Stuk](https://github.com/Stuk).*  
 *All other code in this repo is my own.*
