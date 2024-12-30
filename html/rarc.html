@@ -1,14 +1,14 @@
 <!doctype html>
 <title>RARC (.rarc) to Zip (.zip) | SWITCHjs</title>
-<link rel="stylesheet" href="./style/style.css">
+<link rel="stylesheet" href="../style/style.css">
 
 <button id="openBtn" autofocus>RARC (.rarc) to Zip (.zip)</button>
 <button id="downloadBtn" disabled>Download result</button>
 
-<script src="./libs/readbuf.js"></script>
-<script src="./libs/files.js"></script>
-<script src="./libs/external/jszip.min.js"></script>
-<script src="./rarc.js"></script>
+<script src="../libs/readbuf.js"></script>
+<script src="../libs/files.js"></script>
+<script src="../libs/external/jszip.min.js"></script>
+<script src="../rarc.js"></script>
 <script>
     openBtn.onclick = async function () {
         await decompressFileFromRARC()
