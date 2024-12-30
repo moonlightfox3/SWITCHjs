@@ -46,7 +46,7 @@ function decompressFromBCSV (data) {
         }
         let outText = lines.join("\n")
         let outBuf = new TextEncoder().encode(outText).buffer
-        console.log(outBuf)
+        console.log(outBuf, outText)
     return outBuf
 }
 function bcsv_getField (dataGlobal, data, numMode, offset) {
