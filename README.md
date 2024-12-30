@@ -4,5 +4,5 @@ Note: These tools were made for the Nintendo Switch games **Super Mario Odyssey*
 
 \
 \
-*This repo uses the library [JSZip](https://github.com/Stuk/jszip), made by [https://github.com/Stuk](https://github.com/Stuk), which is dual-licensed under the MIT license or the GPLv3 license.*  
-*All other code in this repo is my own.*
+*This repository uses the library [JSZip](https://github.com/Stuk/jszip), made by [https://github.com/Stuk](https://github.com/Stuk), which is dual-licensed under the MIT license or the GPLv3 license.*  
+*All other code in this repository is my own.*
