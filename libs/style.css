@@ -12,3 +12,6 @@ button {
     border-radius: 5px;
     cursor: pointer;
 }
+li {
+    list-style: square;
+}

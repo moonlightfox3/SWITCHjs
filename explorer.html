@@ -1,11 +1,6 @@
 <!doctype html>
-<title>Nintendo File Formats Explorer</title>
+<title>Nintendo Switch File Formats Explorer</title>
 <link rel="stylesheet" href="./libs/style.css">
-<style>
-    li {
-        list-style: square;
-    }
-</style>
 
 <button id="openBtn" autofocus>Import file</button>
 <div id="structure"></div>
@@ -36,6 +31,12 @@
 
         () => {},
     ]
+    let fileInTypeTable = [
+        inFileTypesYaz0,
+        inFileTypesSARC,
+        inFileTypesRARC,
+        inFileTypesBYML,
+    ]
     let fileOutTypeTable = [
         outFileTypeYaz0,
         outFileTypeSARC,
@@ -48,7 +49,9 @@
     let fileTableAddIndex = 0
 
     openBtn.onclick = async function () {
-        let file = await importFile(["szs", "sarc", "rarc", "byml"])
+        let fileInTypes = []
+        for (let fileInType of fileInTypeTable) fileInTypes.push(...fileInType)
+        let file = await importFile(fileInTypes)
         let buf = file.buf
 
         let list = addList(structure)

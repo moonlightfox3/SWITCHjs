@@ -1,14 +1,16 @@
 /* WIP - DEV NOT FINISHED, WILL NOT WORK */
 
-let result = null
-let resultName = null
+let resultBFRES = null
+let resultNameBFRES = null
+let inFileTypesBFRES = ["bfres"]
+let outFileTypeBFRES = "zip"
 async function decompressFileFromBFRES () {
     let file = await importFile(["bfres"])
-    result = decompressFromBFRES(file.buf)
-    resultName = file.name
+    resultBFRES = decompressFromBFRES(file.buf)
+    resultNameBFRES = file.name
 }
 async function downloadResult () {
-    await exportZip(result, resultName)
+    await exportZip(resultBFRES, resultNameBFRES)
 }
 const dataTypes = [
     "FMDL",
