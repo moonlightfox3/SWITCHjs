@@ -1,0 +1,14 @@
+* {
+    outline: none;
+    user-select: none;
+}
+body, ::selection {
+    background-color: black;
+    color: lightgray;
+}
+
+button {
+    background-color: lightgray;
+    border-radius: 5px;
+    cursor: pointer;
+}

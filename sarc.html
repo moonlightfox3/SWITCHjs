@@ -1,0 +1,21 @@
+<!doctype html>
+<title>SARC (.sarc) to Zip (.zip)</title>
+<link rel="stylesheet" href="./libs/style.css">
+
+<button id="openBtn" autofocus>SARC (.sarc) to Zip (.zip)</button>
+<button id="downloadBtn" disabled>Download result</button>
+
+<script src="./libs/readbuf.js"></script>
+<script src="./libs/files.js"></script>
+<script src="./libs/external/jszip.min.js"></script>
+<script src="./sarc.js"></script>
+<script>
+    openBtn.onclick = async function () {
+        await decompressFileFromSARC()
+        downloadBtn.disabled = false
+        downloadBtn.focus()
+    }
+    downloadBtn.onclick = async function () {
+        await downloadResult()
+    }
+</script>

@@ -1,0 +1,21 @@
+<!doctype html>
+<title>BCSV (.bcsv) to CSV (.csv)</title>
+<link rel="stylesheet" href="./libs/style.css">
+
+<button id="openBtn" autofocus>BCSV (.bcsv) to CSV (.csv)</button>
+<button id="downloadBtn" disabled>Download result</button>
+
+<script src="./libs/readbuf.js"></script>
+<script src="./libs/files.js"></script>
+<script src="./libs/external/jszip.min.js"></script>
+<script src="./bcsv.js"></script>
+<script>
+    openBtn.onclick = async function () {
+        await decompressFileFromBCSV()
+        downloadBtn.disabled = false
+        downloadBtn.focus()
+    }
+    downloadBtn.onclick = async function () {
+        await downloadResult()
+    }
+</script>

@@ -1,0 +1,158 @@
+<!doctype html>
+<title>Nintendo File Formats Explorer</title>
+<link rel="stylesheet" href="./libs/style.css">
+<style>
+    li {
+        list-style: square;
+    }
+</style>
+
+<button id="openBtn" autofocus>Import file</button>
+<div id="structure"></div>
+
+<script src="./libs/readbuf.js"></script>
+<script src="./libs/files.js"></script>
+<script src="./libs/external/jszip.min.js"></script>
+<script src="./yaz0.js"></script>
+<script src="./sarc.js"></script>
+<script src="./rarc.js"></script>
+<script src="./byml.js"></script>
+<script>
+    oncontextmenu = ev => ev.preventDefault()
+
+    let fileTypeMappings = [
+        "Yaz0",
+        "SARC",
+        "RARC",
+        "BYML",
+
+        "?",
+    ]
+    let fileDataTypeFunctionTable = [
+        decompressFromYaz0,
+        decompressFromSARC,
+        decompressFromRARC,
+        decompressFromBYML,
+
+        () => {},
+    ]
+    let fileOutTypeTable = [
+        outFileTypeYaz0,
+        outFileTypeSARC,
+        outFileTypeRARC,
+        outFileTypeBYML,
+    ]
+    
+    let fileDataTable = []
+    let fileNameTable = []
+    let fileTableAddIndex = 0
+
+    openBtn.onclick = async function () {
+        let file = await importFile(["szs", "sarc", "rarc", "byml"])
+        let buf = file.buf
+
+        let list = addList(structure)
+        addFile(list, buf, file.name, file.ext, fileTableAddIndex)
+        fileDataTable[fileTableAddIndex] = buf
+        fileNameTable[fileTableAddIndex] = `${file.name}.${file.ext}`
+        fileTableAddIndex++
+
+        openBtn.remove()
+    }
+
+    function addList (el) {
+        let ul = document.createElement("ul")
+        el.append(ul)
+        return ul
+    }
+    function addFile (ul, buf, name, ext, dataIndex) {
+        let type = getFileType(buf).name
+        let funcIndex = fileTypeMappings.findIndex(val => type.startsWith(val))
+
+        let li = document.createElement("li")
+        let span = document.createElement("span")
+        span.innerHTML = `<b>[${type}]</b> ${name}${ext != undefined ? `.${ext}` : ``}`
+        span.dataset.dataIndex = dataIndex
+        span.dataset.funcIndex = funcIndex
+        span.dataset.running = "0"
+        span.onclick = function () {
+            if (this.dataset.running == "1") return
+            this.dataset.running = "1"
+            this.style.cursor = "wait"
+
+            let dataIndex = +this.dataset.dataIndex
+            let funcIndex = +this.dataset.funcIndex
+            let data = fileDataTable[dataIndex]
+            let result = null
+            try {
+                result = fileDataTypeFunctionTable[funcIndex](data)
+            } catch (er) {
+                this.style.cursor = "pointer"
+                this.dataset.running = "0"
+                return
+            }
+            if (result != undefined) {
+                let result_isBuf = typeof result.resize == "function"
+                let resultExt = fileOutTypeTable[funcIndex]
+                
+                if (result_isBuf) {
+                    let name = fileNameTable[dataIndex].split(".")
+                        let ext = name[1]
+                        name = name[0]
+
+                    let list = addList(this.parentElement)
+                    addFile(list, result, `<i>${name}</i>`, resultExt, fileTableAddIndex)
+                    fileDataTable[fileTableAddIndex] = result
+                    fileNameTable[fileTableAddIndex] = `${name}.${resultExt}`
+                    fileTableAddIndex++
+                } else {
+                    let list = addList(this.parentElement)
+                    addObj(list, result)
+                }
+            }
+
+            this.onclick = () => {}
+            this.style.cursor = "default"
+            this.dataset.running = "0"
+        }
+        span.oncontextmenu = function (ev) {
+            let dataIndex = +this.dataset.dataIndex
+            let data = fileDataTable[dataIndex]
+            let name = fileNameTable[dataIndex].split(".")
+                let ext = name[1]
+                name = name[0]
+            exportFile(data, name, ext)
+        }
+        li.append(span)
+        li.style.cursor = "default"
+        span.style.cursor = "pointer"
+        ul.append(li)
+    }
+    function addFolder (ul, name) {
+        let li = document.createElement("li")
+        let span = document.createElement("span")
+        span.innerHTML = `<b>[FOLDER]</b> ${name}`
+        li.append(span)
+        li.style.cursor = "default"
+        ul.append(li)
+    }
+    function addObj (list, obj) {
+        for (let key of Object.keys(obj)) {
+            let content = obj[key]
+            if (typeof content.resize != "function") { // NOT ArrayBuffer
+                addFolder(list, key)
+                let folder = addList(list)
+                addObj(folder, content)
+            } else {
+                let name = key.split(".")
+                    let ext = name[1]
+                    name = name[0]
+                
+                addFile(list, content, name, ext, fileTableAddIndex)
+                fileDataTable[fileTableAddIndex] = content
+                fileNameTable[fileTableAddIndex] = key
+                fileTableAddIndex++
+            }
+        }
+    }
+</script>

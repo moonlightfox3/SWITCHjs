@@ -1,0 +1,21 @@
+<!doctype html>
+<title>BYML (.byml) to JSON (.json)</title>
+<link rel="stylesheet" href="./libs/style.css">
+
+<button id="openBtn" autofocus>BYML (.byml) to JSON (.json)</button>
+<button id="downloadBtn" disabled>Download result</button>
+
+<script src="./libs/readbuf.js"></script>
+<script src="./libs/files.js"></script>
+<script src="./libs/external/jszip.min.js"></script>
+<script src="./byml.js"></script>
+<script>
+    openBtn.onclick = async function () {
+        await decompressFileFromBYML()
+        downloadBtn.disabled = false
+        downloadBtn.focus()
+    }
+    downloadBtn.onclick = async function () {
+        await downloadResult()
+    }
+</script>

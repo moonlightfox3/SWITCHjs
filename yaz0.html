@@ -1,0 +1,21 @@
+<!doctype html>
+<title>Yaz0 (.szs) to BIN (.bin)</title>
+<link rel="stylesheet" href="./libs/style.css">
+
+<button id="openBtn" autofocus>Yaz0 (.szs) to BIN (.bin)</button>
+<button id="downloadBtn" disabled>Download result</button>
+
+<script src="./libs/readbuf.js"></script>
+<script src="./libs/files.js"></script>
+<script src="./libs/external/jszip.min.js"></script>
+<script src="./yaz0.js"></script>
+<script>
+    openBtn.onclick = async function () {
+        await decompressFileFromYaz0()
+        downloadBtn.disabled = false
+        downloadBtn.focus()
+    }
+    downloadBtn.onclick = async function () {
+        await downloadResult()
+    }
+</script>
