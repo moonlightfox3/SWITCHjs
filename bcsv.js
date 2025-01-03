@@ -7,7 +7,7 @@ async function decompressFileFromBCSV () {
     resultBCSV = decompressFromBCSV(file.buf)
     resultNameBCSV = file.name
 }
-async function downloadResult () {
+async function downloadResultBCSV () {
     await exportFile(resultBCSV, resultNameBCSV, outFileTypeBCSV)
 }
 let bcsv_stringTable = null

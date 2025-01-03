@@ -7,7 +7,7 @@ async function decompressFileFromYaz0 () {
     resultYaz0 = decompressFromYaz0(file.buf)
     resultNameYaz0 = file.name
 }
-async function downloadResult () {
+async function downloadResultYaz0 () {
     let outFileType = getFileType(resultYaz0).ext
     await exportFile(resultYaz0, resultNameYaz0, outFileType)
 }

@@ -7,7 +7,7 @@ async function decompressFileFromRARC () {
     resultRARC = decompressFromRARC(file.buf)
     resultNameRARC = file.name
 }
-async function downloadResult () {
+async function downloadResultRARC () {
     await exportZip(resultRARC, resultNameRARC)
 }
 let rarc_stringTable = null

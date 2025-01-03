@@ -7,7 +7,7 @@ async function decompressFileFromSARC () {
     resultSARC = decompressFromSARC(file.buf)
     resultNameSARC = file.name
 }
-async function downloadResult () {
+async function downloadResultSARC () {
     await exportZip(resultSARC, resultNameSARC)
 }
 function decompressFromSARC (data) {

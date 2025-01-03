@@ -7,7 +7,7 @@ async function decompressFileFromBYML () {
     resultBYML = decompressFromBYML(file.buf)
     resultNameBYML = file.name
 }
-async function downloadResult () {
+async function downloadResultBYML () {
     await exportFile(resultBYML, resultNameBYML, outFileTypeBYML)
 }
 let byml_hashKeyTable = null
