@@ -6,9 +6,9 @@ function getBuf (data, pos, size) {
     let buf = data.slice(pos, pos + size)
     return buf
 }
-function getStr (data, pos, size, mode = "BE") {
+function getStr (data, pos, size, mode = "BE", encoding = "utf-8") {
     let buf = getBuf(data, pos, size)
-    let str = new TextDecoder().decode(buf)
+    let str = new TextDecoder(encoding).decode(buf)
     if (mode == "BE") null
     else if (mode == "LE") str = str.split("").reverse().join("")
     return str
