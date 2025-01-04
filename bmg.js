@@ -51,9 +51,8 @@ function decompressFromBMG (data) {
                 text: bmg_parseText(data, numMode, i),
             }
         }
-    let outText = ""
+    let outText = `"Index:Int:0","MessageInfo:String:0","Message:String:0"\n`
         for (let message of messages) outText += `"${message.id}","${message.info}","${message.text.replaceAll("\"", "\"\"")}"\n`
-        outText = outText.slice(0, -1)
         let outBuf = new TextEncoder().encode(outText).buffer
     return outBuf
 }
@@ -75,7 +74,7 @@ function bmg_parseInfo (data, numMode, id) {
     let otherinfBuf = getBuf(data, (bmg_idLength * id) + 48 + 4 + 2, bmg_idLength - 6)
         let otherinf = new Uint8Array(otherinfBuf)
         let otherinfStr = otherinf.toString()
-    return `${camerashort}-${otherinfStr}`
+    return `${camerashort},${otherinfStr}`
 }
 function bmg_parseText (data, numMode, id) {
     let text = ""
