@@ -13,6 +13,7 @@
 <script src="./rarc.js"></script>
 <script src="./byml.js"></script>
 <script src="./bcsv.js"></script>
+<script src="./bmg.js"></script>
 <script>
     oncontextmenu = ev => ev.preventDefault()
 
@@ -22,6 +23,7 @@
         "RARC",
         "BYML",
         "BCSV",
+        "BMG",
 
         "?",
     ]
@@ -31,6 +33,7 @@
         decompressFromRARC,
         decompressFromBYML,
         decompressFromBCSV,
+        decompressFromBMG,
 
         () => {},
     ]
@@ -40,6 +43,7 @@
         inFileTypesRARC,
         inFileTypesBYML,
         inFileTypesBCSV,
+        inFileTypesBMG,
     ]
     let fileOutTypeTable = [
         outFileTypeYaz0,
@@ -47,6 +51,7 @@
         outFileTypeRARC,
         outFileTypeBYML,
         outFileTypeBCSV,
+        outFileTypeBMG,
     ]
     
     let fileDataTable = []

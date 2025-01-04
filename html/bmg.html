@@ -1,0 +1,21 @@
+<!doctype html>
+<title>BMG (.bmg) to CSV (.csv) | SWITCHjs</title>
+<link rel="stylesheet" href="./style/style.css">
+
+<button id="openBtn" autofocus>BMG (.bmg) to CSV (.csv)</button>
+<button id="downloadBtn" disabled>Download result</button>
+
+<script src="../libs/readbuf.js"></script>
+<script src="../libs/files.js"></script>
+<script src="../libs/external/jszip.min.js"></script>
+<script src="../bmg.js"></script>
+<script>
+    openBtn.onclick = async function () {
+        await decompressFileFromBMG()
+        downloadBtn.disabled = false
+        downloadBtn.focus()
+    }
+    downloadBtn.onclick = async function () {
+        await downloadResultBMG()
+    }
+</script>

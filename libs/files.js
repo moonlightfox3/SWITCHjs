@@ -95,17 +95,26 @@ function getFileType (data, dataExt) {
         ext = "byml"
     }
 
-
     else if (dataExt == "bcsv" || dataExt == "banmt" || dataExt == "bcam" || dataExt == "pa" || dataExt == "tbl") {
         let mode = "LE"
         name = `BCSV_${mode}`
         ext = dataExt
     }
 
+    else if (getStr(data, 0, 4) == "MESG") {
+        let mode = "BE"
+        name = `BMG_${mode}`
+        ext = "bmg"
+    } else if (getStr(data, 0, 4) == "GSEM") {
+        let mode = "LE"
+        name = `BMG_${mode}`
+        ext = "bmg"
+    }
     
     else {
         name = "?"
         ext = "bin"
     }
+
     return {name, ext}
 }
