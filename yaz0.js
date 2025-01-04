@@ -8,8 +8,7 @@ async function decompressFileFromYaz0 () {
     resultNameYaz0 = file.name
 }
 async function downloadResultYaz0 () {
-    let outFileType = getFileType(resultYaz0).ext
-    await exportFile(resultYaz0, resultNameYaz0, outFileType)
+    await exportFile(resultYaz0, resultNameYaz0, outFileTypeYaz0)
 }
 function decompressFromYaz0 (data) {
     let header = getBuf(data, 0, 16)
