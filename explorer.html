@@ -93,7 +93,6 @@
             span.onclick = function () {
                 if (this.dataset.running == "1") return
                 this.dataset.running = "1"
-                this.style.cursor = "wait"
 
                 let dataIndex = +this.dataset.dataIndex
                 let funcIndex = +this.dataset.funcIndex
@@ -102,7 +101,6 @@
                 try {
                     result = fileDataTypeFunctionTable[funcIndex](data)
                 } catch (er) {
-                    this.style.cursor = "pointer"
                     this.dataset.running = "0"
                     return
                 }
