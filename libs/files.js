@@ -15,9 +15,17 @@ async function importFile (exts) {
     })
     let file = await handle.getFile()
     let buf = await file.arrayBuffer()
-    let name = file.name
-        let ext = name.substring(name.lastIndexOf(".") + 1)
-        name = name.substring(0, name.lastIndexOf("."))
+    let fileName = file.name
+        let dotIndex = fileName.lastIndexOf(".")
+        let name = null
+        let ext = null
+        if (dotIndex == -1) {
+            ext = ""
+            name = fileName
+        } else {
+            ext = fileName.substring(dotIndex + 1)
+            name = fileName.substring(0, dotIndex)
+        }
     return {buf, name, ext}
 }
 
