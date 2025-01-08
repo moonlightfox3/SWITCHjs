@@ -89,22 +89,15 @@
         span.innerHTML = `<b>[${type}]</b> ${name}${ext != undefined ? `.${ext}` : ``}`
         span.dataset.dataIndex = dataIndex
         span.dataset.funcIndex = funcIndex
-        span.dataset.running = "0"
         if (fileTypeMappings[funcIndex] != "?") {
             span.onclick = function () {
-                if (this.dataset.running == "1") return
-                this.dataset.running = "1"
-
                 let dataIndex = +this.dataset.dataIndex
                 let funcIndex = +this.dataset.funcIndex
                 let data = fileDataTable[dataIndex]
                 let result = null
                 try {
                     result = fileDataTypeFunctionTable[funcIndex](data)
-                } catch (er) {
-                    this.dataset.running = "0"
-                    return
-                }
+                } catch (er) { return }
                 if (result != undefined) {
                     let result_isBuf = typeof result.resize == "function"
                     let resultExt = fileOutTypeTable[funcIndex]
@@ -125,12 +118,12 @@
                     }
                 }
 
-                this.onclick = () => {}
                 this.style.cursor = "default"
-                this.dataset.running = "0"
+                this.onclick = () => {}
             }
         }
         span.oncontextmenu = function (ev) {
+            ev.preventDefault()
             let dataIndex = +this.dataset.dataIndex
             let data = fileDataTable[dataIndex]
             let name = fileNameTable[dataIndex].split(".")
@@ -147,18 +140,25 @@
         let li = document.createElement("li")
         let span = document.createElement("span")
         span.innerHTML = `<b>[FOLDER]</b> ${name}`
+        span.onclick = function () {
+        }
+        span.oncontextmenu = function (ev) {
+            ev.preventDefault()
+        }
         li.append(span)
         li.style.cursor = "default"
+        span.style.cursor = "default"
         ul.append(li)
     }
     function addObj (list, obj) {
         for (let key of Object.keys(obj)) {
             let content = obj[key]
-            if (typeof content.resize != "function") {   // content IS NOT an ArrayBuffer
+            let content_isBuf = typeof content.resize == "function"
+            if (!content_isBuf) {
                 addFolder(list, key)
                 let folder = addList(list)
                 addObj(folder, content)
-            } else {                                     // content IS an ArrayBuffer
+            } else {
                 let name = key.split(".")
                     let ext = name[1]
                     name = name[0]
