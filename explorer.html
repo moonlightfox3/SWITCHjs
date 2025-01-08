@@ -4,7 +4,7 @@
 <link rel="icon" href="./html/style/icon.png">
 <script src="./libs/profile.js"></script>
 
-<button id="openBtn" autofocus>Import file</button>
+<button id="openBtn" autofocus>Import file</button><button id="openZipBtn">Import Zip file</button>
 <div id="structure"></div>
 
 <script src="./libs/readbuf.js"></script>
@@ -73,6 +73,38 @@
         fileTableAddIndex++
 
         openBtn.remove()
+        openZipBtn.remove()
+    }
+    openZipBtn.onclick = async function () {
+        let obj = {}
+        let file = await importFile("zip")
+        let zip = await JSZip.loadAsync(file.buf)
+        let files = zip.files
+        for (let key of Object.keys(files)) {
+            let file = files[key]
+            let isFolder = file.dir
+            let fullName = file.name
+
+            let currentPath = obj
+            let nameParts = fullName.split("/")
+            if (isFolder) nameParts = nameParts.slice(0, -1)
+            let dirParts = nameParts.slice(0, -1)
+            for (let dirPart of dirParts) {
+                if (currentPath[dirPart] == undefined) currentPath[dirPart] = {}
+                currentPath = currentPath[dirPart]
+            }
+            if (!isFolder) {
+                let fileName = nameParts.at(-1)
+                let fileData = await file.async("arraybuffer")
+                currentPath[fileName] = fileData
+            }
+        }
+
+        let list = addList(structure)
+        addObj(list, obj)
+
+        openBtn.remove()
+        openZipBtn.remove()
     }
 
     function addList (el) {
@@ -103,9 +135,10 @@
                     let resultExt = fileOutTypeTable[funcIndex]
                     
                     if (result_isBuf) {
-                        let name = fileNameTable[dataIndex].split(".")
-                            let ext = name[1]
-                            name = name[0]
+                        let name = fileNameTable[dataIndex]
+                            let nameDotIndex = name.lastIndexOf(".")
+                            let ext = name.substring(nameDotIndex + 1)
+                            name = name.substring(0, nameDotIndex)
 
                         let list = addList(this.parentElement)
                         addFile(list, result, `<i>${name}</i>`, resultExt, fileTableAddIndex)
@@ -126,9 +159,10 @@
             ev.preventDefault()
             let dataIndex = +this.dataset.dataIndex
             let data = fileDataTable[dataIndex]
-            let name = fileNameTable[dataIndex].split(".")
-                let ext = name[1]
-                name = name[0]
+            let name = fileNameTable[dataIndex]
+                let nameDotIndex = name.lastIndexOf(".")
+                let ext = name.substring(nameDotIndex + 1)
+                name = name.substring(0, nameDotIndex)
             exportFile(data, name, ext)
         }
         li.append(span)
@@ -159,9 +193,10 @@
                 let folder = addList(list)
                 addObj(folder, content)
             } else {
-                let name = key.split(".")
-                    let ext = name[1]
-                    name = name[0]
+                let name = key
+                    let nameDotIndex = name.lastIndexOf(".")
+                    let ext = name.substring(nameDotIndex + 1)
+                    name = name.substring(0, nameDotIndex)
                 
                 addFile(list, content, name, ext, fileTableAddIndex)
                 fileDataTable[fileTableAddIndex] = content
