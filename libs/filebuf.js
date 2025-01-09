@@ -1,7 +1,13 @@
+class IntSize {
+    static U32 = 4
+    static U16 = 2
+    static U8 = 1
+}
 class Endian {
     static BIG = ">"
     static LITTLE = "<"
 }
+
 class FileBuf {
     buf = null
     constructor (buf) { this.buf = buf }
