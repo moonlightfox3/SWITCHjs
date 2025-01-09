@@ -65,15 +65,15 @@ function getFileType (data, dataExt) {
     let name = null
     let ext = null
 
-    if (getStr(data, 0, 4) == "Yaz0") {
+    if (data.str(0x00, 0x04) == "Yaz0") {
         let mode = "BE"
         name = `Yaz0_${mode}`
         ext = "szs"
     }
     
-    else if (getStr(data, 0, 4) == "SARC") {
+    else if (data.str(0x00, 0x04) == "SARC") {
         let mode = null
-        let byteOrder = getNum(data, 6, 2, "BE")
+        let byteOrder = data.int(0x06, IntSize.U16, {endian: Endian.BIG})
             byteOrder = byteOrder.toString(16)
             if (byteOrder == "feff") mode = "BE"
             else if (byteOrder == "fffe") mode = "LE"
@@ -81,24 +81,24 @@ function getFileType (data, dataExt) {
             ext = "sarc"
     }
 
-    else if (getStr(data, 0, 4) == "RARC") {
+    else if (data.str(0x00, 0x04) == "RARC") {
         let mode = "BE"
         name = `RARC_${mode}`
         ext = "rarc"
-    } else if (getStr(data, 0, 4) == "CRAR") {
+    } else if (data.str(0x00, 0x04) == "CRAR") {
         let mode = "LE"
         name = `RARC_${mode}`
         ext = "rarc"
     }
     
-    else if (getStr(data, 0, 2) == "BY") {
+    else if (data.str(0x00, 0x02) == "BY") {
         let mode = "BE"
-        let ver = getNum(data, 2, 2, mode)
+        let ver = data.int(0x02, IntSize.U16, mode)
         name = `BYML_${mode}_V${ver}`
         ext = "byml"
-    } else if (getStr(data, 0, 2) == "YB") {
+    } else if (data.str(0x00, 0x02) == "YB") {
         let mode = "LE"
-        let ver = getNum(data, 2, 2, mode)
+        let ver = data.int(0x02, IntSize.U16, mode)
         name = `BYML_${mode}_V${ver}`
         ext = "byml"
     }
@@ -109,11 +109,11 @@ function getFileType (data, dataExt) {
         ext = dataExt
     }
 
-    else if (getStr(data, 0, 4) == "MESG") {
+    else if (data.str(0x00, 0x04) == "MESG") {
         let mode = "BE"
         name = `BMG_${mode}`
         ext = "bmg"
-    } else if (getStr(data, 0, 4) == "GSEM") {
+    } else if (data.str(0x00, 0x04) == "GSEM") {
         let mode = "LE"
         name = `BMG_${mode}`
         ext = "bmg"
