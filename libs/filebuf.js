@@ -9,17 +9,17 @@ class Endian {
 }
 
 class FileBuf {
-    buf = null
-    constructor (buf) { this.buf = buf }
+    data = null
+    constructor (data) { this.data = data }
 
-    cls (offset, size, options = {}) {
+    buf (offset, size, options = {}) {
         let outBuf = this.data.slice(offset, offset + size)
         let outCls = new FileBuf(outBuf)
         return outCls
     }
     
     str (offset, size, options = {endian: Endian.BIG, encoding: "utf-8"}) {
-        let inCls = this.cls(offset, size)
+        let inCls = this.buf(offset, size)
         let inBuf = inCls.data
         let outStr = new TextDecoder(options.encoding).decode(inBuf)
         if (options.endian == Endian.BIG) null
@@ -28,7 +28,7 @@ class FileBuf {
     }
 
     int (offset, size, options = {endian: Endian.BIG}) {
-        let inCls = this.cls(offset, size)
+        let inCls = this.buf(offset, size)
         let inBuf = inCls.data
         let inArr = new Uint8Array(inBuf)
         if (options.endian == Endian.BIG) null
@@ -40,7 +40,7 @@ class FileBuf {
         return outInt
     }
     float (offset, size, options = {endian: Endian.BIG}) {
-        let inCls = this.cls(offset, size)
+        let inCls = this.buf(offset, size)
         let inInt = inCls.int(0, size, options)
         
         let inHex = inInt.toString(16)
@@ -76,7 +76,7 @@ class FileBuf {
         return outFloat
     }
     byte (offset, size, options = {}) {
-        let inCls = this.cls(offset, 1)
+        let inCls = this.buf(offset, 1)
         let outByte = inCls.int(0, 1)
         return outByte
     }
