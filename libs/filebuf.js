@@ -90,7 +90,7 @@ class FileBuf {
         return outBit
     }
     
-    static expect (inVal, checkVals, msg) {
+    static expectVal (inVal, checkVals, msg) {
         if (typeof checkVals == "string") checkVals = [checkVals]
 
         let found = false
