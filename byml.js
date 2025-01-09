@@ -4,7 +4,8 @@ let inFileTypesBYML = ["byml"]
 let outFileTypeBYML = "json"
 async function decompressFileFromBYML () {
     let file = await importFile(inFileTypesBYML)
-    resultBYML = decompressFromBYML(file.buf)
+    let fileBuf = new FileBuf(file.buf)
+    resultBYML = decompressFromBYML(fileBuf)
     resultNameBYML = file.name
 }
 async function downloadResultBYML () {
@@ -13,36 +14,36 @@ async function downloadResultBYML () {
 let byml_hashKeyTable = null
 let byml_stringTable = null
 let byml_fileStructure = null
-function decompressFromBYML (data) {
+function decompressFromBYML (fileBuf) {
     byml_hashKeyTable = null
     byml_stringTable = null
     byml_fileStructure = null
 
     let numMode = null
-    let header = getBuf(data, 0, 16)
-        let header_name = getStr(header, 0, 2)
-            expectVals(header_name, ["BY", "YB"], "Invalid file", "BYML header does not start with 'BY' or 'YB'")
-            if (header_name == "BY") numMode = "BE"
-            else if (header_name == "YB") numMode = "LE"
-        let header_version = getNum(header, 2, 2, numMode)
-        let header_hashKeyTableOffset = getNum(header, 4, 4, numMode)
-        let header_stringTableOffset = getNum(header, 8, 4, numMode)
-        let header_rootNodeOffset = getNum(header, 12, 4, numMode)
-    let src = getBuf(data, 16, data.byteLength - 16)
-        byml_hashKeyTable = byml_getNode(data, header_hashKeyTableOffset, header_version, numMode, true)
-        byml_stringTable = byml_getNode(data, header_stringTableOffset, header_version, numMode, true)
-        let rootNode = byml_getNode(data, header_rootNodeOffset, header_version, numMode, true)
-            let rootNodeType = getByte(data, header_rootNodeOffset)
+    let header = fileBuf.buf(0x00, 0x10)
+        let header_name = header.str(0x00, 0x02)
+            FileBuf.expectVal(header_name, ["BY", "YB"], "BYML header does not start with 'BY' or 'YB'")
+            if (header_name == "BY") numMode = Endian.BIG
+            else if (header_name == "YB") numMode = Endian.LITTLE
+        let header_version = header.int(0x02, IntSize.U16, {endian: numMode})
+        let header_hashKeyTableOffset = header.int(0x04, IntSize.U32, {endian: numMode})
+        let header_stringTableOffset = header.int(0x08, IntSize.U32, {endian: numMode})
+        let header_rootNodeOffset = header.int(0x0C, IntSize.U32, {endian: numMode})
+    let src = fileBuf.buf(0x10, fileBuf.data.byteLength - 0x10)
+        byml_hashKeyTable = byml_getNode(fileBuf, header_hashKeyTableOffset, header_version, numMode, true)
+        byml_stringTable = byml_getNode(fileBuf, header_stringTableOffset, header_version, numMode, true)
+        let rootNode = byml_getNode(fileBuf, header_rootNodeOffset, header_version, numMode, true)
+            let rootNodeType = fileBuf.byte(header_rootNodeOffset)
             let rootNodeContainerType = {}
             if (rootNode != null) rootNodeContainerType = byml_getContainerNode(rootNodeType, header_version)
     
     byml_fileStructure = rootNodeContainerType
-    if (rootNode != null) byml_traverseNodes(data, rootNode, [], header_version, numMode)
+    if (rootNode != null) byml_traverseNodes(fileBuf, rootNode, [], header_version, numMode)
         let json = JSON.stringify(byml_fileStructure, null, 4) + "\n"
         let jsonBuf = new TextEncoder().encode(json).buffer
     return jsonBuf
 }
-function byml_traverseNodes (data, nodes, outArr, version, numMode) {
+function byml_traverseNodes (fileBuf, nodes, outArr, version, numMode) {
     let structure = []
     let out = byml_fileStructure
     for (let outPart of outArr) {
@@ -70,57 +71,57 @@ function byml_traverseNodes (data, nodes, outArr, version, numMode) {
         }
 
         if (valueValue == null) {
-            let outNodes = byml_getNode(data, value, version, numMode)
-            byml_traverseNodes(data, outNodes, nextOutArr, version, numMode)
+            let outNodes = byml_getNode(fileBuf, value, version, numMode)
+            byml_traverseNodes(fileBuf, outNodes, nextOutArr, version, numMode)
             nextOutArr.splice(nextOutArr.length - 1, 1)
         }
     }
 }
-function byml_getNode (data, offset, version, numMode, zeroEmpty = false) {
-    if (zeroEmpty && offset == 0) return null
+function byml_getNode (fileBuf, offset, version, numMode, zeroEmpty = false) {
+    if (zeroEmpty && offset == 0x00) return null
 
-    let type = getByte(data, offset)
-    let buf = getBuf(data, offset, data.byteLength - offset)
-    if (version >= 2) {
+    let type = fileBuf.byte(offset)
+    let buf = fileBuf.buf(offset, fileBuf.data.byteLength - offset)
+    if (version >= 0x02) {
         if (type == 0xA0) {
-            let index = getNum(buf, 1, 4, numMode)
+            let index = buf.int(0x01, IntSize.U32, {endian: numMode})
             return index
         } else if (type == 0xC0) {
-            let numEntries = getNum(buf, 1, 3, numMode)
+            let numEntries = buf.int(0x01, IntSize.U24, {endian: numMode})
             let nodes = []
-            let typesBuf = getBuf(buf, 4, numEntries)
-                let types = [...new Uint8Array(typesBuf)]
-            let valuesBuf = getBuf(buf, 4 + (Math.ceil(numEntries / 4) * 4), 4 * numEntries)
+            let typesBuf = buf.arr(0x04, numEntries)
+                let types = [...typesBuf]
+            let valuesBuf = buf.buf(0x04 + (Math.ceil(numEntries / 0x04) * 0x04), 0x04 * numEntries)
                 for (let i = 0; i < numEntries; i++) {
                     let type = types[i]
-                    let value = getNum(valuesBuf, i * 4, 4, numMode)
+                    let value = valuesBuf.int(i * 0x04, IntSize.U32, {endian: numMode})
                     nodes.push({type, value})
                 }
             return nodes
         } else if (type == 0xC1) {
-            let numEntries = getNum(buf, 1, 3, numMode)
+            let numEntries = buf.int(0x01, IntSize.U24, {endian: numMode})
             let entries = new Array(numEntries)
             for (let i = 0; i < numEntries; i++) {
-                let entry = getBuf(buf, 4 + (i * 8), 8)
-                    let hashKeyIndex = getNum(entry, 0, 3, numMode)
-                    let type = getByte(entry, 3)
-                    let value = getNum(entry, 4, 4, numMode)
+                let entry = buf.buf(0x04 + (i * 0x08), 0x08)
+                    let hashKeyIndex = entry.int(0x00, IntSize.U24, {endian: numMode})
+                    let type = entry.byte(3)
+                    let value = entry.int(0x04, IntSize.U32, {endian: numMode})
                 entries[i] = {type, value, hashKeyIndex}
             }
             return entries
         } else if (type == 0xC2) {
-            let numEntries = getNum(buf, 1, 3, numMode)
-                let offsetsArrSize = 4 * (numEntries + 1)
-            let offsetsBuf = getBuf(buf, 4, offsetsArrSize)
-                let stringsStart = getNum(offsetsBuf, 0, 4, numMode)
-                let stringsEnd = getNum(offsetsBuf, numEntries * 4, 4, numMode)
-            let stringsBuf = getBuf(buf, stringsStart, stringsEnd - stringsStart)
-                let stringsStr = getStr(stringsBuf, 0, stringsBuf.byteLength)
+            let numEntries = buf.int(0x01, IntSize.U24, {endian: numMode})
+                let offsetsArrSize = 0x04 * (numEntries + 1)
+            let offsetsBuf = buf.buf(0x04, offsetsArrSize)
+                let stringsStart = offsetsBuf.int(0x00, IntSize.U32, {endian: numMode})
+                let stringsEnd = offsetsBuf.int(numEntries * 0x04, IntSize.U32, {endian: numMode})
+            let stringsBuf = buf.buf(stringsStart, stringsEnd - stringsStart)
+                let stringsStr = stringsBuf.str(0x00, stringsBuf.data.byteLength)
                 let strings = stringsStr.slice(0, -1).split("\x00")
             return strings
         } else if (type == 0xD0) {
         } else if (type == 0xD1) {
-            let num = getNum(buf, 1, 4, numMode)
+            let num = buf.int(0x01, IntSize.U32, {endian: numMode})
             return num
         } else if (type == 0xD2) {
         } else if (type == 0xD3) {
@@ -147,7 +148,7 @@ function byml_getNode (data, offset, version, numMode, zeroEmpty = false) {
         }*/
     }
 
-    expectVal(0, 1, "Error reading file", `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). File offset: 0x${offset.toString(16).toUpperCase()} (${offset})`)
+    FileBuf.expectVal(0, 1, `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). File offset: 0x${offset.toString(16).toUpperCase()} (${offset})`)
 }
 function byml_getContainerNode (type, version) {
     if (version >= 2) {
@@ -194,7 +195,7 @@ function byml_getContainerNode (type, version) {
         }*/
     }
     
-    expectVal(0, 1, "Error reading file", `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse container node`)
+    FileBuf.expectVal(0, 1, `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse container node`)
 }
 function byml_getValueNode (type, value, version) {
     if (version >= 2) {
@@ -211,7 +212,7 @@ function byml_getValueNode (type, value, version) {
         } else if (type == 0xD1) {
             return value
         } else if (type == 0xD2) {
-            return numGetFloatSingle(value)
+            return FileBuf.float_int(value)
         } else if (type == 0xD3) {
             return value
         }
@@ -244,5 +245,5 @@ function byml_getValueNode (type, value, version) {
         }*/
     }
     
-    expectVal(0, 1, "Error reading file", `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse value node`)
+    FileBuf.expectVal(0, 1, `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse value node`)
 }

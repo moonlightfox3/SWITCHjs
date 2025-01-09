@@ -4,7 +4,8 @@ let inFileTypesBMG = ["bmg"]
 let outFileTypeBMG = "csv"
 async function decompressFileFromBMG () {
     let file = await importFile(inFileTypesBMG)
-    resultBMG = decompressFromBMG(file.buf)
+    let fileBuf = new FileBuf(file.buf)
+    resultBMG = decompressFromBMG(fileBuf)
     resultNameBMG = file.name
 }
 async function downloadResultBMG () {
@@ -12,32 +13,36 @@ async function downloadResultBMG () {
 }
 let bmg_idLength = null
 let bmg_dat1Offset = null
-function decompressFromBMG (data) {
+let bmg_stringEncoding = null
+function decompressFromBMG (fileBuf) {
     bmg_idLength = null
+    bmg_dat1Offset = null
+    bmg_stringEncoding = null
 
     let numMode = null
-    let header = getBuf(data, 0x00, 0x20)
-        let header_name1 = getStr(header, 0x00, 4)
-            expectVals(header_name1, ["MESG", "GSEM"], "Invalid file", "MESG header does not start with 'MESG' or 'GSEM'")
-            if (header_name1 == "MESG") numMode = "BE"
-            else if (header_name1 == "GSEM") numMode = "LE"
-        let header_name2 = getStr(header, 0x04, 4)
-            expectVal(header_name2, (numMode == "BE" ? "bmg1" : "1gmb"), "Invalid file", "MESG header does not start with 'bmg1' or '1gmb'")
-        let header_flw1Offset = getNum(header, 0x08, U32, numMode)
-        let header_sectionCount = getNum(header, 0x0C, U32, numMode)
-            expectVal(header_sectionCount, 4, "Invalid file", "MESG header states incorrect section count")
-        let header_stringEncoding = getNum(header, 0x10, U8, numMode)
+    let header = fileBuf.buf(0x00, 0x20)
+        let header_name1 = header.str(0x00, 0x04)
+            FileBuf.expectVal(header_name1, ["MESG", "GSEM"], "MESG header does not start with 'MESG' or 'GSEM'")
+            if (header_name1 == "MESG") numMode = Endian.BIG
+            else if (header_name1 == "GSEM") numMode = Endian.LITTLE
+        let header_name2 = header.str(0x04, 0x04)
+            FileBuf.expectVal(header_name2, (numMode == Endian.BIG ? "bmg1" : "1gmb"), "MESG header does not start with 'bmg1' or '1gmb'")
+        let header_flw1Offset = header.int(0x08, IntSize.U32, {endian: numMode})
+        let header_sectionCount = header.int(0x0C, IntSize.U32, {endian: numMode})
+            FileBuf.expectVal(header_sectionCount, 0x04, "MESG header states incorrect section count")
+        let header_stringEncoding = header.int(0x10, IntSize.U8, {endian: numMode})
             let header_stringEncodingName = null
-            if (header_stringEncoding == 0) header_stringEncodingName = "CP1252"
-            else if (header_stringEncoding == 1) header_stringEncodingName = "CP1252"
-            else if (header_stringEncoding == 2) header_stringEncodingName = "UTF-16"
-            else if (header_stringEncoding == 3) header_stringEncodingName = "Shift-JIS"
-            else if (header_stringEncoding == 4) header_stringEncodingName = "UTF-8"
-        let header_unused = getNum(header, 0x11, U8*15, numMode)
-    let sections = getBuf(data, 0x20, data.byteLength - 0x20)
+            if (header_stringEncoding == 0x00) header_stringEncodingName = "cp1252"
+            else if (header_stringEncoding == 0x01) header_stringEncodingName = "cp1252"
+            else if (header_stringEncoding == 0x02) header_stringEncodingName = "utf-16"
+            else if (header_stringEncoding == 0x03) header_stringEncodingName = "shift-jis"
+            else if (header_stringEncoding == 0x04) header_stringEncodingName = "utf-8"
+            bmg_stringEncoding = header_stringEncodingName
+        let header_unused = header.int(0x11, 0x15, {endian: numMode})
+    let sections = fileBuf.buf(0x20, fileBuf.data.byteLength - 0x20)
         let sections_inf1 = bmg_getSection(sections, numMode, 0x00)
-            let inf1_messageCount = getNum(sections_inf1.section, 0x00, U16, numMode)
-            let inf1_idLength = getNum(sections_inf1.section, 0x02, U16, numMode)
+            let inf1_messageCount = sections_inf1.section.int(0x00, IntSize.U16, {endian: numMode})
+            let inf1_idLength = sections_inf1.section.int(0x02, IntSize.U16, {endian: numMode})
                 bmg_idLength = inf1_idLength
         let sections_dat1 = bmg_getSection(sections, numMode, sections_inf1.endOffset)
             bmg_dat1Offset = sections_inf1.endOffset + 0x20
@@ -47,8 +52,8 @@ function decompressFromBMG (data) {
         for (let i = 0; i < inf1_messageCount; i++) {
             messages[i] = {
                 id: i,
-                info: bmg_parseInfo(data, numMode, i),
-                text: bmg_parseText(data, numMode, i),
+                info: bmg_parseInfo(fileBuf, numMode, i),
+                text: bmg_parseText(fileBuf, numMode, i),
             }
         }
     let outText = `"Index:Int:0","MessageInfo:String:0","Message:String:0"\n`
@@ -56,11 +61,11 @@ function decompressFromBMG (data) {
         let outBuf = new TextEncoder().encode(outText).buffer
     return outBuf
 }
-function bmg_getSection (data, numMode, offset) {
-    let base = getBuf(data, offset, 0x08)
-        let base_name = getStr(base, 0x00, 0x04, numMode)
-        let base_size = getNum(base, 0x04, U32, numMode)
-    let section = getBuf(data, offset + 0x08, base_size)
+function bmg_getSection (fileBuf, numMode, offset) {
+    let base = fileBuf.buf(offset, 0x08)
+        let base_name = base.str(0x00, 0x04, {endian: numMode})
+        let base_size = base.int(0x04, IntSize.U32, {endian: numMode})
+    let section = fileBuf.buf(offset + 0x08, base_size)
     let endOffset = offset + base_size
     return {
         base_name,
@@ -69,65 +74,56 @@ function bmg_getSection (data, numMode, offset) {
         section,
     }
 }
-function bmg_parseInfo (data, numMode, id) {
-    let camerashort = getNum(data, (bmg_idLength * id) + 48 + 4, U16, numMode)
-    let otherinfBuf = getBuf(data, (bmg_idLength * id) + 48 + 4 + 2, bmg_idLength - 6)
-        let otherinf = new Uint8Array(otherinfBuf)
+function bmg_parseInfo (fileBuf, numMode, id) {
+    let camerashort = fileBuf.int((bmg_idLength * id) + 48 + 4, IntSize.U16, {endian: numMode})
+    let otherinf = fileBuf.arr((bmg_idLength * id) + 48 + 4 + 2, bmg_idLength - 6)
         let otherinfStr = otherinf.toString()
     return `${camerashort},${otherinfStr}`
 }
-function bmg_parseText (data, numMode, id) {
+function bmg_parseText (fileBuf, numMode, id) {
     let text = ""
     let i = 0
-    let dataOffset = getNum(data, (bmg_idLength * id) + 48, U32, numMode)
-    let charset = getStr(data, bmg_dat1Offset + dataOffset + 8, 2, numMode)
+    let dataOffset = fileBuf.int((bmg_idLength * id) + 48, IntSize.U32, {endian: numMode})
+    let charset = fileBuf.str(bmg_dat1Offset + dataOffset + 8, 2, {endian: numMode})
     while (charset != "\x00\x00") {
         let offset = bmg_dat1Offset + dataOffset + i
         if (charset == "\x00\x1A") {
             let name = "_"
-            let idData = getBuf(data, offset + 10, 0x02)
-                let idData_0 = getNum(idData, 0x00, U8, numMode)
-                let idData_1 = getNum(idData, 0x01, U8, numMode)
-            if (idData_1 == 1) {
-                // pause
-                if (idData_0 == 8) name = getNum(data, offset + 12 + 2, U16, numMode)
-                else name = getNum(data, offset + 12, U16, numMode)
-            } else if (idData_1 == 2) {
-                // anim/sound
+            let idData = fileBuf.buf(offset + 10, 0x02)
+                let idData_0 = idData.int(0x00, IntSize.U8, {endian: numMode})
+                let idData_1 = idData.int(0x01, IntSize.U8, {endian: numMode})
+            if (idData_1 == 0x01) { // pause
+                if (idData_0 == 8) name = fileBuf.int(offset + 12 + 2, IntSize.U16, {endian: numMode})
+                else name = fileBuf.int(offset + 12, IntSize.U16, {endian: numMode})
+            } else if (idData_1 == 0x02) { // anim/sound
                 name = ""
-                for (let j = 2; j < idData_0 - 4; j += 2) name += getStr(data, offset + j + 12 + 1, 1)
-            } else if (idData_1 == 3) {
-                // emoji
-                name = getNum(data, offset + 12, U16, numMode)
-            } else if (idData_1 == 4) {
-                // size
-                name = getNum(data, offset + 12, U16, numMode)
-            } else if (idData_1 == 5) {
-                // plumber
-                name = Math.round(getNum(data, offset + 12, U32, numMode) / 256)
-            } else if (idData_1 == 6 || idData_1 == 7) {
-                // number/systext
-                let bytes = getBuf(data, offset + 12, 0x0A)
-                if (numMode == "BE") name = `${getNum(bytes, 0x01, U8, numMode)},${getNum(bytes, 0x09, U8, numMode)}`
-                else if (numMode == "LE") name = `${getNum(bytes, 0x00, U8, numMode)},${getNum(bytes, 0x06, U8, numMode)}`
-            } else if (idData_1 == 9) {
-                // race time
-                let buf = getBuf(data, offset + 12, U16, numMode)
-                name = new Uint8Array(buf).toString()
-            } else if (idData_1 == 255) {
-                // color
-                name = Math.round(getNum(data, offset + 12, U32, "BE") / 256)
-            } else expectVal(0, 1, "Error reading file", `Unknown escape ID [${idData_0}, ${idData_1}] in message ${id}`)
+                for (let j = 2; j < idData_0 - 4; j += 2) name += fileBuf.str(offset + j + 12 + 1, 1)
+            } else if (idData_1 == 0x03) { // emoji
+                name = fileBuf.int(offset + 12, IntSize.U16, {endian: numMode})
+            } else if (idData_1 == 0x04) { // size
+                name = fileBuf.int(offset + 12, IntSize.U16, {endian: numMode})
+            } else if (idData_1 == 0x05) { // plumber
+                name = Math.round(fileBuf.int(offset + 12, IntSize.U32, {endian: numMode}) / 256)
+            } else if (idData_1 == 0x06 || idData_1 == 0x07) { // number/systext
+                let bytes = fileBuf.buf(offset + 12, 0x0A)
+                if (numMode == Endian.BIG) name = `${bytes.int(0x01, IntSize.U8, {endian: numMode})},${bytes.int(0x09, IntSize.U8, {endian: numMode})}`
+                else if (numMode == Endian.LITTLE) name = `${bytes.int(0x00, IntSize.U8, {endian: numMode})},${bytes.int(0x06, IntSize.U8, {endian: numMode})}`
+            } else if (idData_1 == 0x09) { // race time
+                let arr = fileBuf.arr(offset + 12, IntSize.U16, {endian: numMode})
+                name = arr.toString()
+            } else if (idData_1 == 0xFF) { // color
+                name = Math.round(fileBuf.int(offset + 12, IntSize.U32, Endian.BIG) / 256)
+            } else FileBuf.expectVal(0, 1, `Unknown escape ID [${idData_0}, ${idData_1}] in message ${id}`)
             let type = bmg_defs.names[idData_1]
             if (bmg_defs[type] != undefined) name = bmg_defs[type][name] || `?${name}`
             text += `<${type}=${name}>`
             i += idData_0
         } else {
-            let newCharset = getStr(data, offset + 8, 2, numMode, "utf-16")
+            let newCharset = fileBuf.str(offset + 8, 2, {endian: numMode, encoding: bmg_stringEncoding})
             text += newCharset
             i += 2
         }
-        charset = getStr(data, bmg_dat1Offset + dataOffset + i + 8, 2, numMode)
+        charset = fileBuf.str(bmg_dat1Offset + dataOffset + i + 8, 2, {endian: numMode})
     }
     return text
 }

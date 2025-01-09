@@ -1,8 +1,6 @@
-all:
-    switch from using readbuf.js to filebuf.js
 general:
     make sure info icon in bottom right stays there
-    on long pages (like explorer.html), it can scroll up
+        on long pages (like explorer.html), it can scroll up
 explorer.html:
     add file viewers
         text
