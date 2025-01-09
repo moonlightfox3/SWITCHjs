@@ -1,4 +1,5 @@
 class IntSize {
+    static U64 = 8
     static U32 = 4
     static U16 = 2
     static U8 = 1
