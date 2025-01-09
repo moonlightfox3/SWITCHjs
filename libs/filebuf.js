@@ -19,7 +19,7 @@ class FileBuf {
     }
     arr (offset, size, options = {endian: Endian.BIG}) {
         let inBuf = this.buf(offset, size)
-        let outArr = new Uint8Array(inBuf)
+        let outArr = new Uint8Array(inBuf.data)
         if (options.endian == Endian.BIG) null
         else if (options.endian == Endian.LITTLE) outArr.reverse()
         return outArr

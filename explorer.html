@@ -7,7 +7,7 @@
 <button id="openBtn" autofocus>Import file</button><button id="openZipBtn">Import Zip file</button>
 <div id="structure"></div>
 
-<script src="./libs/readbuf.js"></script>
+<script src="./libs/filebuf.js"></script>
 <script src="./libs/files.js"></script>
 <script src="https://stuk.github.io/jszip/dist/jszip.min.js"></script>
 <script src="./yaz0.js"></script>
@@ -126,10 +126,8 @@
                 let dataIndex = +this.dataset.dataIndex
                 let funcIndex = +this.dataset.funcIndex
                 let data = fileDataTable[dataIndex]
-                let result = null
-                try {
-                    result = fileDataTypeFunctionTable[funcIndex](data)
-                } catch (er) { return }
+                let fileBuf = new FileBuf(data)
+                let result = fileDataTypeFunctionTable[funcIndex](fileBuf)
                 if (result != undefined) {
                     let result_isBuf = typeof result.resize == "function"
                     let resultExt = fileOutTypeTable[funcIndex]
