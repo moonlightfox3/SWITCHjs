@@ -80,8 +80,7 @@ class FileBuf {
         let outByte = inCls.int(0, 1)
         return outByte
     }
-}
-class FileBufVal {
+    
     static nibble_byte (inVal, offset) {
         let outNibble = (inVal >> (4 * (1 - offset))) & 0b00001111
         return outNibble
