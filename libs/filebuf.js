@@ -44,11 +44,14 @@ class FileBuf {
         let outInt = parseInt(outStr, 16)
         return outInt
     }
-    float (offset, size, options = {endian: Endian.BIG}) {
-        let inCls = this.buf(offset, size)
-        let inInt = inCls.int(0, size, options)
-        
-        let inHex = inInt.toString(16)
+    byte (offset, size, options = {}) {
+        let inCls = this.buf(offset, 1)
+        let outByte = inCls.int(0, 1)
+        return outByte
+    }
+    
+    static float_int (inVal, offset) {
+        let inHex = inVal.toString(16)
             let inHex_b1 = inHex.substring(0, 2)
             let inHex_b2 = inHex.substring(2, 4)
             let inHex_b3 = inHex.substring(4, 6)
@@ -80,12 +83,6 @@ class FileBuf {
         let outFloat = outFloat_sign * outFloat_exponent * outFloat_fraction
         return outFloat
     }
-    byte (offset, size, options = {}) {
-        let inCls = this.buf(offset, 1)
-        let outByte = inCls.int(0, 1)
-        return outByte
-    }
-    
     static nibble_byte (inVal, offset) {
         let outNibble = (inVal >> (4 * (1 - offset))) & 0b00001111
         return outNibble
