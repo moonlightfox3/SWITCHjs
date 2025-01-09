@@ -17,6 +17,13 @@ class FileBuf {
         let outCls = new FileBuf(outBuf)
         return outCls
     }
+    arr (offset, size, options = {endian: Endian.BIG}) {
+        let inBuf = this.buf(offset, size)
+        let outArr = new Uint8Array(inBuf)
+        if (options.endian == Endian.BIG) null
+        else if (options.endian == Endian.LITTLE) outArr.reverse()
+        return outArr
+    }
     
     str (offset, size, options = {endian: Endian.BIG, encoding: "utf-8"}) {
         let inCls = this.buf(offset, size)
@@ -29,10 +36,7 @@ class FileBuf {
 
     int (offset, size, options = {endian: Endian.BIG}) {
         let inCls = this.buf(offset, size)
-        let inBuf = inCls.data
-        let inArr = new Uint8Array(inBuf)
-        if (options.endian == Endian.BIG) null
-        else if (options.endian == Endian.LITTLE) inArr.reverse()
+        let inArr = inCls.arr(0, size, options)
         
         let outStr = ""
         for (let inInt of inArr) outStr += inInt.toString(16).padStart(2, "0")
