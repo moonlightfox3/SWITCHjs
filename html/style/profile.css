@@ -1,0 +1,31 @@
+div#profile {
+    display: none;
+    position: fixed;
+    left: 0px;
+    top: calc(100% - 32px - 2px);
+    width: calc(100% - 2px);
+    height: 32px;
+    
+    background-color: black;
+    border: 1px solid lightgray;
+    border-radius: 30px;
+    text-align: center;
+    line-height: 30px;
+}
+div#profileExpand {
+    position: fixed;
+    left: calc(100% - 30px - 4px);
+    top: calc(100% - 30px - 4px);
+    width: 30px;
+    height: 30px;
+    
+    background-color: black;
+    border: 2px solid lightgray;
+    border-radius: 30px;
+    text-align: center;
+    line-height: 30px;
+    cursor: pointer;
+}
+a.profileLink {
+    color: lightgray;
+}
