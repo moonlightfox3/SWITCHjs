@@ -1,9 +1,9 @@
 explorer.html:
     add file viewers
         text
-        hex
-        csv
         json
+        csv
+        hex
 converters:
     allow resaving same Nintendo file type
         choose little or big endian
