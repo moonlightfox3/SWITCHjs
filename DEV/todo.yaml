@@ -1,7 +1,8 @@
 explorer.html:
     allow downloading folders in addition to files
     fix downloading files with no extension
-    
+    auto-detect bcsv file based on content (some bcsv files have no extension, no bcsv files have magic at start)
+
     add file viewers
         text
         json
