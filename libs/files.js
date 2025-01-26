@@ -8,10 +8,10 @@ async function importFile (exts) {
         startIn: "downloads",
         types: [{
             accept: {
-                "*/*": exts
+                "*/*": exts,
             },
-            description: ":"
-        }]
+            description: ":",
+        }],
     })
     let file = await handle.getFile()
     let buf = await file.arrayBuffer()
@@ -30,17 +30,30 @@ async function importFile (exts) {
 }
 
 async function exportFile (buf, name, ext) {
-    let handle = await showSaveFilePicker({
-        suggestedName: `${name}.${ext}`,
-        excludeAcceptAllOption: false,
-        startIn: "downloads",
-        types: [{
-            accept: {
-                "*/*": [`.${ext}`]
-            },
-            description: ":"
-        }]
-    })
+    let handle = null
+    if (ext != "") {
+        handle = await showSaveFilePicker({
+            suggestedName: `${name}.${ext}`,
+            excludeAcceptAllOption: false,
+            startIn: "downloads",
+            types: [{
+                accept: {
+                    "*/*": [`.${ext}`],
+                },
+                description: ":",
+            }],
+        })
+    } else {
+        handle = await showSaveFilePicker({
+            suggestedName: `${name}`,
+            excludeAcceptAllOption: false,
+            startIn: "downloads",
+            types: [{
+                accept: {},
+                description: ":",
+            }],
+        })
+    }
     let writable = await handle.createWritable()
     await writable.write(buf)
     await writable.close()
