@@ -10,6 +10,7 @@ explorer.html:
 converters:
     create:
         odyssey:
+            .msbt (messages)
             .bfstm (music stream)
             .bfsar (sound effects)
         galaxy:
