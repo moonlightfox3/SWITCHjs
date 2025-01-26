@@ -1,4 +1,5 @@
 explorer.html:
+    allow downloading folders in addition to files
     add file viewers
         text
         json
