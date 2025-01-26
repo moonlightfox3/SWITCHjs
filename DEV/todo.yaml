@@ -5,6 +5,16 @@ explorer.html:
         csv
         hex
 converters:
+    create:
+        odyssey:
+            .bfstm (music stream)
+            .bfsar (sound effects)
+        galaxy:
+            .ast (audio stream)
+            .aw (audio wave)
+            .thp (video+audio)
+
     allow resaving same Nintendo file type
         choose little or big endian
         does not allow importing new file (too complicated for now)
+    eventually, allow converting common file types to Nintendo file types
