@@ -75,7 +75,7 @@
     }
     openZipBtn.onclick = async function () {
         let obj = {}
-        let file = await importFile("zip")
+        let file = await importFile(["zip"])
         let zip = await JSZip.loadAsync(file.buf)
         let files = zip.files
         for (let key of Object.keys(files)) {
@@ -176,7 +176,7 @@
         }
         li.append(span)
         li.style.cursor = "default"
-        span.style.cursor = (fileTypeMappings[funcIndex] != "?" ? "pointer" : "default")
+        span.style.cursor = "pointer"
         ul.append(li)
     }
     function addFolder (ul, name) {

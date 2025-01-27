@@ -1,5 +1,4 @@
 async function importFile (exts) {
-    if (typeof exts == "string") exts = [exts]
     for (let index in exts) exts[index] = `.${exts[index]}`
 
     let [handle] = await showOpenFilePicker({
@@ -74,59 +73,59 @@ function exportZip_parseObj (zip, obj) {
     }
 }
 
-function getFileType (data, dataExt) {
+function getFileType (fileBuf, fileExt) {
     let name = null
     let ext = null
 
-    if (data.str(0x00, 0x04) == "Yaz0") {
+    if (fileBuf.str(0x00, 0x04) == "Yaz0") {
         let mode = Endian.BIG
         name = `Yaz0_${mode}`
         ext = "szs"
     }
     
-    else if (data.str(0x00, 0x04) == "SARC") {
+    else if (fileBuf.str(0x00, 0x04) == "SARC") {
         let mode = null
-        let byteOrder = data.int(0x06, IntSize.U16, {endian: Endian.BIG})
+        let byteOrder = fileBuf.int(0x06, IntSize.U16, {endian: Endian.BIG})
             byteOrder = byteOrder.toString(16)
             if (byteOrder == "feff") mode = Endian.BIG
             else if (byteOrder == "fffe") mode = Endian.LITTLE
-            name = `SARC_${mode}`
-            ext = "sarc"
+        name = `SARC_${mode}`
+        ext = "sarc"
     }
 
-    else if (data.str(0x00, 0x04) == "RARC") {
+    else if (fileBuf.str(0x00, 0x04) == "RARC") {
         let mode = Endian.BIG
         name = `RARC_${mode}`
         ext = "rarc"
-    } else if (data.str(0x00, 0x04) == "CRAR") {
+    } else if (fileBuf.str(0x00, 0x04) == "CRAR") {
         let mode = Endian.LITTLE
         name = `RARC_${mode}`
         ext = "rarc"
     }
     
-    else if (data.str(0x00, 0x02) == "BY") {
+    else if (fileBuf.str(0x00, 0x02) == "BY") {
         let mode = Endian.BIG
-        let ver = data.int(0x02, IntSize.U16, {endian: mode})
+        let ver = fileBuf.int(0x02, IntSize.U16, {endian: mode})
         name = `BYML_${mode}_V${ver}`
         ext = "byml"
-    } else if (data.str(0x00, 0x02) == "YB") {
+    } else if (fileBuf.str(0x00, 0x02) == "YB") {
         let mode = Endian.LITTLE
-        let ver = data.int(0x02, IntSize.U16, {endian: mode})
+        let ver = fileBuf.int(0x02, IntSize.U16, {endian: mode})
         name = `BYML_${mode}_V${ver}`
         ext = "byml"
     }
 
-    else if (dataExt == "bcsv" || dataExt == "banmt" || dataExt == "bcam" || dataExt == "pa" || dataExt == "tbl") {
+    else if (fileExt == "bcsv" || fileExt == "banmt" || fileExt == "bcam" || fileExt == "pa" || fileExt == "tbl") {
         let mode = Endian.LITTLE
         name = `BCSV_${mode}`
-        ext = dataExt
+        ext = fileExt
     }
 
-    else if (data.str(0x00, 0x04) == "MESG") {
+    else if (fileBuf.str(0x00, 0x04) == "MESG") {
         let mode = Endian.BIG
         name = `BMG_${mode}`
         ext = "bmg"
-    } else if (data.str(0x00, 0x04) == "GSEM") {
+    } else if (fileBuf.str(0x00, 0x04) == "GSEM") {
         let mode = Endian.LITTLE
         name = `BMG_${mode}`
         ext = "bmg"
