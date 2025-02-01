@@ -39,7 +39,6 @@ class FileBuf {
     int (offset, size, options = {endian: Endian.BIG}) {
         let inCls = this.buf(offset, size)
         let inArr = inCls.arr(0, size, options)
-        
         let outStr = ""
         for (let inInt of inArr) outStr += inInt.toString(16).padStart(2, "0")
         let outInt = parseInt(outStr, 16)
@@ -107,5 +106,49 @@ class FileBuf {
             alert(`ERROR: ${msg}`)
             throw new Error(msg)
         }
+    }
+}
+class FileBufWriter {
+    data = null
+    constructor (data) { this.data = data }
+    
+    buf (offset, inData, options = {}) {
+        let thisArr = new Uint8Array(this.data)
+        let inArr = new Uint8Array(inData)
+        thisArr.set(inArr, offset)
+        return inArr.length
+    }
+    arr (offset, inData, options = {}) {
+        let inArr = new Uint8Array(inData)
+        this.buf(offset, inArr)
+        return inArr.length
+    }
+
+    str (offset, inData, options = {endian: Endian.BIG, encoding: "utf-8"}) {
+        let outArr = new TextEncoder(options.encoding).encode(inData)
+        if (options.endian == Endian.BIG) null
+        else if (options.endian == Endian.LITTLE) outArr = outArr.reverse()
+        this.buf(offset, outArr.buffer)
+        return outArr.length
+    }
+    
+    int (offset, inData, options = {endian: Endian.BIG, size: IntSize.U8}) {
+        let inHex = inData.toString(16)
+        let inLength = Math.ceil(inHex.length / 2)
+        inHex = inHex.padStart(inLength * 2, "0")
+        let outArr = new Uint8Array(options.size)
+        for (let i = 0; i < inHex.length; i += 2) {
+            let byte = inHex.substring(i, i + 2)
+            outArr[(i / 2) + (outArr.length - inLength)] = parseInt(byte, 16)
+        }
+        if (options.endian == Endian.BIG) null
+        else if (options.endian == Endian.LITTLE) outArr = outArr.reverse()
+        this.buf(offset, outArr.buffer)
+        return inLength
+    }
+    byte (offset, inData, options = {}) {
+        let outBuf = new Uint8Array([inData]).buffer
+        this.buf(offset, outBuf)
+        return 1
     }
 }
