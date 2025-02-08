@@ -81,7 +81,8 @@ class FileBuf {
             let outFloat_fraction = (2 ** 0) + fraction
         
         let outFloat = outFloat_sign * outFloat_exponent * outFloat_fraction
-        return outFloat
+            let outFloatRounded = +outFloat.toFixed(3)
+        return outFloatRounded
     }
     static nibble_byte (inVal, offset) {
         let outNibble = (inVal >> (4 * (1 - offset))) & 0b00001111
