@@ -89,6 +89,9 @@ class FileBuf {
             let outFloatRounded = +outFloat.toFixed(3)
         return outFloatRounded
     }
+    static signedInt_int (inVal, offset, options = {size: IntSize.U8}) {
+        throw new Error("[filebuf] UInt to Int conversion is not implemented yet!")
+    }
     static nibble_byte (inVal, offset, options = {}) {
         let outNibble = (inVal >> (4 * (1 - offset))) & 0b00001111
         return outNibble

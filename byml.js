@@ -44,33 +44,30 @@ function decompressFromBYML (fileBuf) {
     return jsonBuf
 }
 function byml_traverseNodes (fileBuf, nodes, outArr, version, numMode) {
-    let structure = []
     let out = byml_fileStructure
-    for (let outPart of outArr) {
-        structure.push(out)
-        out = out[outPart]
-    }
+    for (let outPart of outArr) out = out[outPart]
 
     for (let node of nodes) {
         let type = node.type
         let value = node.value
-        let valueValue = byml_getValueNode(type, value, version)
+        let valueValue = byml_getValueNode(type, value, version, fileBuf, numMode)
         let containerValue = byml_getContainerNode(type, version)
         let convertValue = valueValue
+        if (convertValue === undefined) convertValue = containerValue
+        if (convertValue === undefined) FileBuf.expectVal(0, 1, `Unknown error while parsing node.`)
         let hashKeyIndex = node.hashKeyIndex
         let hashKey = byml_hashKeyTable[hashKeyIndex]
-        if (convertValue == null) convertValue = containerValue
         
         let nextOutArr = outArr
-        if (hashKeyIndex == undefined) {
-            out.push(containerValue)
-            if (containerValue != null) nextOutArr.push(out.length - 1)
+        if (hashKey == undefined) {
+            out.push(convertValue)
+            if (containerValue !== undefined) nextOutArr.push(out.length - 1)
         } else {
             out[hashKey] = convertValue
-            if (containerValue != null) nextOutArr.push(hashKey)
+            if (containerValue !== undefined) nextOutArr.push(hashKey)
         }
 
-        if (valueValue == null) {
+        if (valueValue === undefined) {
             let outNodes = byml_getNode(fileBuf, value, version, numMode)
             byml_traverseNodes(fileBuf, outNodes, nextOutArr, version, numMode)
             nextOutArr.splice(nextOutArr.length - 1, 1)
@@ -84,8 +81,6 @@ function byml_getNode (fileBuf, offset, version, numMode, zeroEmpty = false) {
     let buf = fileBuf.buf(offset, fileBuf.data.byteLength - offset)
     if (version >= 0x02) {
         if (type == 0xA0) {
-            let index = buf.int(0x01, IntSize.U32, {endian: numMode})
-            return index
         } else if (type == 0xC0) {
             let numEntries = buf.int(0x01, IntSize.U24, {endian: numMode})
             let nodes = []
@@ -121,8 +116,6 @@ function byml_getNode (fileBuf, offset, version, numMode, zeroEmpty = false) {
             return strings
         } else if (type == 0xD0) {
         } else if (type == 0xD1) {
-            let num = buf.int(0x01, IntSize.U32, {endian: numMode})
-            return num
         } else if (type == 0xD2) {
         } else if (type == 0xD3) {
         }
@@ -135,114 +128,113 @@ function byml_getNode (fileBuf, offset, version, numMode, zeroEmpty = false) {
         }
     }
     if (version >= 4) {
-        /*if (type == 0xA1) {
-        }*/
+        if (type == 0xA1) {
+        }
     }
     if (version >= 5) {
-        /*if (type == 0xA2) {
-        }*/
+        if (type == 0xA2) {
+        }
     }
     if (version >= 7) {
-        /*if (type == 0x20) {
-        } *//*else if (type == 0x21) {
-        }*/
+        if (type == 0x20) {
+        } else if (type == 0x21) {
+        }
     }
 
-    FileBuf.expectVal(0, 1, `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). File offset: 0x${offset.toString(16).toUpperCase()} (${offset})`)
+    FileBuf.expectVal(0, 1, `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse complex node. File offset: 0x${offset.toString(16).toUpperCase()} (${offset})`)
 }
 function byml_getContainerNode (type, version) {
     if (version >= 2) {
         if (type == 0xA0) {
-            return null
+            return undefined
         } else if (type == 0xC0) {
             return []
         } else if (type == 0xC1) {
             return {}
         } else if (type == 0xC2) {
-            return null
+            return undefined
         } else if (type == 0xD0) {
-            return null
+            return undefined
         } else if (type == 0xD1) {
-            return null
+            return undefined
         } else if (type == 0xD2) {
-            return null
+            return undefined
         } else if (type == 0xD3) {
-            return null
+            return undefined
         }
     }
     if (version >= 3) {
         if (type == 0xD4) {
-            return null
+            return undefined
         } else if (type == 0xD5) {
-            return null
+            return undefined
         } else if (type == 0xD6) {
-            return null
+            return undefined
         } else if (type == 0xFF) {
-            return null
+            return undefined
         }
     }
     if (version >= 4) {
-        /*if (type == 0xA1) {
-        }*/
+        if (type == 0xA1) {
+        }
     }
     if (version >= 5) {
-        /*if (type == 0xA2) {
-        }*/
+        if (type == 0xA2) {
+        }
     }
     if (version >= 7) {
-        /*if (type == 0x20) {
-        } *//*else if (type == 0x21) {
-        }*/
+        if (type == 0x20) {
+        } else if (type == 0x21) {
+        }
     }
     
     FileBuf.expectVal(0, 1, `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse container node`)
 }
-function byml_getValueNode (type, value, version) {
+function byml_getValueNode (type, value, version, fileBuf, numMode) {
     if (version >= 2) {
         if (type == 0xA0) {
             return byml_stringTable[value]
         } else if (type == 0xC0) {
-            return null
+            return undefined
         } else if (type == 0xC1) {
-            return null
+            return undefined
         } else if (type == 0xC2) {
-            return null
+            return undefined
         } else if (type == 0xD0) {
-            return value
+            return value == 0 ? false : true
         } else if (type == 0xD1) {
-            return value
+            return FileBuf.signedInt_int(value, null, {size: IntSize.U32})
         } else if (type == 0xD2) {
-            return FileBuf.float_int(value)
+            return FileBuf.float_int(value, null, {precision: FloatPrecision.SINGLE})
         } else if (type == 0xD3) {
             return value
         }
     }
     if (version >= 3) {
         if (type == 0xD4) {
-            // special - offset from start of file
-            // int64
+            let realValue = fileBuf.int(value, IntSize.U64, {endian: numMode})
+            return FileBuf.signedInt_int(realValue, null, {size: IntSize.U64})
         } else if (type == 0xD5) {
-            // special - offset from start of file
-            // uint64
+            return fileBuf.int(value, IntSize.U64, {endian: numMode})
         } else if (type == 0xD6) {
-            // special - offset from start of file
-            // double (binary64)
+            let realValue = fileBuf.int(value, IntSize.U64, {endian: numMode})
+            return FileBuf.float_int(realValue, null, {precision: FloatPrecision.DOUBLE})
         } else if (type == 0xFF) {
-            return value
+            return null
         }
     }
     if (version >= 4) {
-        /*if (type == 0xA1) {
-        }*/
+        if (type == 0xA1) {
+        }
     }
     if (version >= 5) {
-        /*if (type == 0xA2) {
-        }*/
+        if (type == 0xA2) {
+        }
     }
     if (version >= 7) {
-        /*if (type == 0x20) {
-        } *//*else if (type == 0x21) {
-        }*/
+        if (type == 0x20) {
+        } else if (type == 0x21) {
+        }
     }
     
     FileBuf.expectVal(0, 1, `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse value node`)
