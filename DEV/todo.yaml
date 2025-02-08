@@ -10,7 +10,7 @@ explorer.html:
 converters:
     fix:
         .byml:
-            arrays incorrectlycontain all null items
+            arrays incorrectly contain all null items
 
     allow resaving same Nintendo file type:
         choose little or big endian
