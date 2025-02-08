@@ -5,6 +5,11 @@ class IntSize {
     static U16 = 2
     static U8 = 1
 }
+class FloatPrecision {
+    static HALF = [5, 10]
+    static SINGLE = [8, 23]
+    static DOUBLE = [11, 52]
+}
 class Endian {
     static BIG = ">"
     static LITTLE = "<"
@@ -50,7 +55,7 @@ class FileBuf {
         return outByte
     }
     
-    static float_int (inVal, offset) {
+    static float_int (inVal, offset, options = {precision: FloatPrecision.SINGLE}) {
         let inHex = inVal.toString(16)
             let inHex_b1 = inHex.substring(0, 2)
             let inHex_b2 = inHex.substring(2, 4)
@@ -60,7 +65,7 @@ class FileBuf {
 
         let binSign = inBin.substring(0, 1)
             let outFloat_sign = (-1) ** parseInt(binSign, 2)
-        let binExponent = inBin.substring(1, 9)
+        let binExponent = inBin.substring(1, options.precision[0] + 1)
             let exponent = 0
             let indexExp = 0
             for (let i = binExponent.length - 1; i >= 0; i--) {
@@ -70,7 +75,7 @@ class FileBuf {
             }
             let bias = (2 ** (binExponent.length - 1)) - 1
             let outFloat_exponent = 2 ** (exponent - bias)
-        let binFraction = inBin.substring(9, 32)
+        let binFraction = inBin.substring(options.precision[0] + 1, options.precision[1] + options.precision[0] + 1)
             let fraction = 0
             let indexFrac = 0
             for (let i = -1; i >= -binFraction.length; i--) {
@@ -84,11 +89,11 @@ class FileBuf {
             let outFloatRounded = +outFloat.toFixed(3)
         return outFloatRounded
     }
-    static nibble_byte (inVal, offset) {
+    static nibble_byte (inVal, offset, options = {}) {
         let outNibble = (inVal >> (4 * (1 - offset))) & 0b00001111
         return outNibble
     }
-    static bit_byte (inVal, offset) {
+    static bit_byte (inVal, offset, options = {}) {
         let outBit = (inVal >> (7 - offset)) & 0b00000001
         return outBit
     }
