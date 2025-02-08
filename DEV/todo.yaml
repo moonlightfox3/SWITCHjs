@@ -8,10 +8,6 @@ explorer.html:
         csv
         hex
 converters:
-    fix:
-        .byml:
-            arrays incorrectly contain all null items
-
     allow resaving same Nintendo file type:
         choose little or big endian
         does not allow importing new file (too complicated for now)
