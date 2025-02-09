@@ -24,7 +24,7 @@ function decompressFromYaz0 (fileBuf) {
             let code = src.byte(srcPos)
                 srcPos++
             for (let i = 0; i < 8; i++) {
-                let bit = FileBuf.bit_byte(code, i)
+                let bit = FileBuf.bit_byte(code, {offset: i})
                 if (bit == 1) {
                     let copy = src.byte(srcPos)
                         srcPos++
@@ -33,8 +33,8 @@ function decompressFromYaz0 (fileBuf) {
                 } else if (bit == 0) {
                     let byte1 = src.byte(srcPos)
                         srcPos++
-                        let a = FileBuf.nibble_byte(byte1, 0)
-                        let b = FileBuf.nibble_byte(byte1, 1)
+                        let a = FileBuf.nibble_byte(byte1, {offset: 0})
+                        let b = FileBuf.nibble_byte(byte1, {offset: 1})
                     let byte2 = src.byte(srcPos)
                         srcPos++
                     

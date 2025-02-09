@@ -14,6 +14,11 @@ class Endian {
     static BIG = ">"
     static LITTLE = "<"
 }
+class SignedIntBinaryType {
+    static SIGN_MAGNITUDE = 0
+    static ONES_COMPLEMENT = 1
+    static TWOS_COMPLEMENT = 2
+}
 
 class FileBuf {
     data = null
@@ -55,7 +60,7 @@ class FileBuf {
         return outByte
     }
     
-    static float_int (inVal, offset, options = {precision: FloatPrecision.SINGLE}) {
+    static float_int (inVal, options = {precision: FloatPrecision.SINGLE}) {
         let inHex = inVal.toString(16)
             let inHex_b1 = inHex.substring(0, 2)
             let inHex_b2 = inHex.substring(2, 4)
@@ -89,15 +94,30 @@ class FileBuf {
             let outFloatRounded = +outFloat.toFixed(3)
         return outFloatRounded
     }
-    static signedInt_int (inVal, offset, options = {size: IntSize.U8}) {
-        FileBuf.expectVal(0, 1, "[filebuf] UInt to Int conversion is not implemented yet!")
+    static signedInt_int (inVal, options = {size: IntSize.U8, type: SignedIntBinaryType.TWOS_COMPLEMENT}) {
+        let inBin = inVal.toString(2).padStart(options.size * 8, "0").split("")
+            let signBit = inBin.splice(0, 1)
+                let isPositive = signBit == 0
+            inBin = inBin.join("")
+        if (options.type == SignedIntBinaryType.SIGN_MAGNITUDE) {
+        } else if (options.type == SignedIntBinaryType.ONES_COMPLEMENT) {
+            if (!isPositive) inBin = inBin.split("").map(val => val == "0" ? "1" : "0").join("")
+        } else if (options.type == SignedIntBinaryType.TWOS_COMPLEMENT) {
+            if (!isPositive) {
+                inBin = (parseInt(inBin, 2) - 1).toString(2)
+                inBin = inBin.split("").map(val => val == "0" ? "1" : "0").join("")
+            }
+        }
+        let outInt = parseInt(inBin, 2)
+        if (!isPositive) outInt *= -1
+        return outInt
     }
-    static nibble_byte (inVal, offset, options = {}) {
-        let outNibble = (inVal >> (4 * (1 - offset))) & 0b00001111
+    static nibble_byte (inVal, options = {offset: 0}) {
+        let outNibble = (inVal >> (4 * (1 - options.offset))) & 0b00001111
         return outNibble
     }
-    static bit_byte (inVal, offset, options = {}) {
-        let outBit = (inVal >> (7 - offset)) & 0b00000001
+    static bit_byte (inVal, options = {offset: 0}) {
+        let outBit = (inVal >> (7 - options.offset)) & 0b00000001
         return outBit
     }
     

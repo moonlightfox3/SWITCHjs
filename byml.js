@@ -203,9 +203,9 @@ function byml_getValueNode (type, value, version, fileBuf, numMode) {
         } else if (type == 0xD0) {
             return value == 0 ? false : true
         } else if (type == 0xD1) {
-            return FileBuf.signedInt_int(value, null, {size: IntSize.U32})
+            return FileBuf.signedInt_int(value, {size: IntSize.U32, type: SignedIntBinaryType.TWOS_COMPLEMENT})
         } else if (type == 0xD2) {
-            return FileBuf.float_int(value, null, {precision: FloatPrecision.SINGLE})
+            return FileBuf.float_int(value, {precision: FloatPrecision.SINGLE})
         } else if (type == 0xD3) {
             return value
         }
@@ -213,12 +213,12 @@ function byml_getValueNode (type, value, version, fileBuf, numMode) {
     if (version >= 3) {
         if (type == 0xD4) {
             let realValue = fileBuf.int(value, IntSize.U64, {endian: numMode})
-            return FileBuf.signedInt_int(realValue, null, {size: IntSize.U64})
+            return FileBuf.signedInt_int(realValue, {size: IntSize.U64, type: SignedIntBinaryType.TWOS_COMPLEMENT})
         } else if (type == 0xD5) {
             return fileBuf.int(value, IntSize.U64, {endian: numMode})
         } else if (type == 0xD6) {
             let realValue = fileBuf.int(value, IntSize.U64, {endian: numMode})
-            return FileBuf.float_int(realValue, null, {precision: FloatPrecision.DOUBLE})
+            return FileBuf.float_int(realValue, {precision: FloatPrecision.DOUBLE})
         } else if (type == 0xFF) {
             return null
         }
