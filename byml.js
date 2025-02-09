@@ -30,12 +30,12 @@ function decompressFromBYML (fileBuf) {
         let header_stringTableOffset = header.int(0x08, IntSize.U32, {endian: numMode})
         let header_rootNodeOffset = header.int(0x0C, IntSize.U32, {endian: numMode})
     let src = fileBuf.buf(0x10, fileBuf.data.byteLength - 0x10)
-        byml_hashKeyTable = byml_getNode(fileBuf, header_hashKeyTableOffset, header_version, numMode, true)
-        byml_stringTable = byml_getNode(fileBuf, header_stringTableOffset, header_version, numMode, true)
-        let rootNode = byml_getNode(fileBuf, header_rootNodeOffset, header_version, numMode, true)
+        byml_hashKeyTable = byml_parseContainerNode(fileBuf, header_hashKeyTableOffset, header_version, numMode, true)
+        byml_stringTable = byml_parseContainerNode(fileBuf, header_stringTableOffset, header_version, numMode, true)
+        let rootNode = byml_parseContainerNode(fileBuf, header_rootNodeOffset, header_version, numMode, true)
             let rootNodeType = fileBuf.byte(header_rootNodeOffset)
             let rootNodeContainerType = {}
-            if (rootNode != null) rootNodeContainerType = byml_getContainerNode(rootNodeType, header_version)
+            if (rootNode != null) rootNodeContainerType = byml_getContainerNodeType(rootNodeType, header_version)
     
     byml_fileStructure = rootNodeContainerType
     if (rootNode != null) byml_traverseNodes(fileBuf, rootNode, [], header_version, numMode)
@@ -50,8 +50,8 @@ function byml_traverseNodes (fileBuf, nodes, outArr, version, numMode) {
     for (let node of nodes) {
         let type = node.type
         let value = node.value
-        let valueValue = byml_getValueNode(type, value, version, fileBuf, numMode)
-        let containerValue = byml_getContainerNode(type, version)
+        let valueValue = byml_parseValueNode(type, value, version, fileBuf, numMode)
+        let containerValue = byml_getContainerNodeType(type, version)
         let convertValue = valueValue
         if (convertValue === undefined) convertValue = containerValue
         if (convertValue === undefined) FileBuf.expectVal(0, 1, `Unknown error while parsing node.`)
@@ -68,13 +68,13 @@ function byml_traverseNodes (fileBuf, nodes, outArr, version, numMode) {
         }
 
         if (valueValue === undefined) {
-            let outNodes = byml_getNode(fileBuf, value, version, numMode)
+            let outNodes = byml_parseContainerNode(fileBuf, value, version, numMode)
             byml_traverseNodes(fileBuf, outNodes, nextOutArr, version, numMode)
             nextOutArr.splice(nextOutArr.length - 1, 1)
         }
     }
 }
-function byml_getNode (fileBuf, offset, version, numMode, zeroEmpty = false) {
+function byml_parseContainerNode (fileBuf, offset, version, numMode, zeroEmpty = false) {
     if (zeroEmpty && offset == 0x00) return null
 
     let type = fileBuf.byte(offset)
@@ -137,60 +137,15 @@ function byml_getNode (fileBuf, offset, version, numMode, zeroEmpty = false) {
     }
     if (version >= 7) {
         if (type == 0x20) {
+            // not implemented
         } else if (type == 0x21) {
+            // not implemented
         }
     }
 
-    FileBuf.expectVal(0, 1, `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse complex node. File offset: 0x${offset.toString(16).toUpperCase()} (${offset})`)
+    FileBuf.expectVal(0, 1, `Invalid or not implemented node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse container node. File offset: 0x${offset.toString(16).toUpperCase()} (${offset}).`)
 }
-function byml_getContainerNode (type, version) {
-    if (version >= 2) {
-        if (type == 0xA0) {
-            return undefined
-        } else if (type == 0xC0) {
-            return []
-        } else if (type == 0xC1) {
-            return {}
-        } else if (type == 0xC2) {
-            return undefined
-        } else if (type == 0xD0) {
-            return undefined
-        } else if (type == 0xD1) {
-            return undefined
-        } else if (type == 0xD2) {
-            return undefined
-        } else if (type == 0xD3) {
-            return undefined
-        }
-    }
-    if (version >= 3) {
-        if (type == 0xD4) {
-            return undefined
-        } else if (type == 0xD5) {
-            return undefined
-        } else if (type == 0xD6) {
-            return undefined
-        } else if (type == 0xFF) {
-            return undefined
-        }
-    }
-    if (version >= 4) {
-        if (type == 0xA1) {
-        }
-    }
-    if (version >= 5) {
-        if (type == 0xA2) {
-        }
-    }
-    if (version >= 7) {
-        if (type == 0x20) {
-        } else if (type == 0x21) {
-        }
-    }
-    
-    FileBuf.expectVal(0, 1, `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse container node`)
-}
-function byml_getValueNode (type, value, version, fileBuf, numMode) {
+function byml_parseValueNode (type, value, version, fileBuf, numMode) {
     if (version >= 2) {
         if (type == 0xA0) {
             return byml_stringTable[value]
@@ -225,17 +180,72 @@ function byml_getValueNode (type, value, version, fileBuf, numMode) {
     }
     if (version >= 4) {
         if (type == 0xA1) {
+            // not implemented
         }
     }
     if (version >= 5) {
         if (type == 0xA2) {
+            // not implemented
         }
     }
     if (version >= 7) {
         if (type == 0x20) {
+            return undefined
         } else if (type == 0x21) {
+            return undefined
         }
     }
     
-    FileBuf.expectVal(0, 1, `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse value node`)
+    FileBuf.expectVal(0, 1, `Invalid or not implemented node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse value node.`)
+}
+function byml_getContainerNodeType (type, version) {
+    if (version >= 2) {
+        if (type == 0xA0) {
+            return undefined
+        } else if (type == 0xC0) {
+            return []
+        } else if (type == 0xC1) {
+            return {}
+        } else if (type == 0xC2) {
+            return undefined
+        } else if (type == 0xD0) {
+            return undefined
+        } else if (type == 0xD1) {
+            return undefined
+        } else if (type == 0xD2) {
+            return undefined
+        } else if (type == 0xD3) {
+            return undefined
+        }
+    }
+    if (version >= 3) {
+        if (type == 0xD4) {
+            return undefined
+        } else if (type == 0xD5) {
+            return undefined
+        } else if (type == 0xD6) {
+            return undefined
+        } else if (type == 0xFF) {
+            return undefined
+        }
+    }
+    if (version >= 4) {
+        if (type == 0xA1) {
+            return undefined
+        }
+    }
+    if (version >= 5) {
+        if (type == 0xA2) {
+            return undefined
+        }
+    }
+    if (version >= 7) {
+        if (type == 0x20) {
+            // not implemented
+        } else if (type == 0x21) {
+            // not implemented
+        }
+    }
+    
+    FileBuf.expectVal(0, 1, `Invalid or not implemented node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Get container node type.`)
 }
