@@ -1,6 +1,5 @@
 explorer.html:
     allow downloading folders in addition to files
-    auto-detect bcsv file based on content (some bcsv files have no extension, no bcsv files have magic at start)
 
     add file viewers
         text
