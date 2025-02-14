@@ -4,7 +4,6 @@ async function importFile (exts) {
     let [handle] = await showOpenFilePicker({
         multiple: false,
         excludeAcceptAllOption: false,
-        startIn: "downloads",
         types: [{
             accept: {
                 "*/*": exts,
@@ -34,7 +33,6 @@ async function exportFile (buf, name, ext) {
         handle = await showSaveFilePicker({
             suggestedName: `${name}.${ext}`,
             excludeAcceptAllOption: false,
-            startIn: "downloads",
             types: [{
                 accept: {
                     "*/*": [`.${ext}`],
@@ -46,7 +44,6 @@ async function exportFile (buf, name, ext) {
         handle = await showSaveFilePicker({
             suggestedName: `${name}`,
             excludeAcceptAllOption: false,
-            startIn: "downloads",
             types: [{
                 accept: {},
                 description: ":",
