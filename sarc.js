@@ -1,6 +1,6 @@
 let resultSARC = null
 let resultNameSARC = null
-let inFileTypesSARC = ["sarc", "aras"]
+let inFileTypesSARC = ["sarc", "aras", "baatarc"]
 let outFileTypeSARC = "zip"
 async function decompressFileFromSARC () {
     let file = await importFile(inFileTypesSARC)
