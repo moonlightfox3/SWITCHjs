@@ -38,6 +38,7 @@ function decompressFromBCSV (fileBuf) {
         for (let i = 0; i < header_colCount; i++) {
             let col = bcsv_getCol(fileBuf, colsBuf, numMode, i * 0x0C)
             let name = bcsv_hashTable[col.nameHash] || "UNKNOWN"
+            console.debug(col.nameHash, name)
             let type = bcsv_dataTypes[col.dataType]
             let defaultValue = bcsv_defaultValues[col.dataType]
             let formatStr = `${name}:${type}:${defaultValue}`
