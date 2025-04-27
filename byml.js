@@ -25,10 +25,10 @@ function decompressFromBYML (fileBuf) {
             FileBuf.expectVal(header_name, ["BY", "YB"], "BYML header does not start with 'BY' or 'YB'")
             if (header_name == "BY") numMode = Endian.BIG
             else if (header_name == "YB") numMode = Endian.LITTLE
-        let header_version = header.int(0x02, IntSize.U16, {endian: numMode})
-        let header_hashKeyTableOffset = header.int(0x04, IntSize.U32, {endian: numMode})
-        let header_stringTableOffset = header.int(0x08, IntSize.U32, {endian: numMode})
-        let header_rootNodeOffset = header.int(0x0C, IntSize.U32, {endian: numMode})
+        let header_version = header.int(0x02, IntSize.U16, numMode)
+        let header_hashKeyTableOffset = header.int(0x04, IntSize.U32, numMode)
+        let header_stringTableOffset = header.int(0x08, IntSize.U32, numMode)
+        let header_rootNodeOffset = header.int(0x0C, IntSize.U32, numMode)
     let src = fileBuf.buf(0x10, fileBuf.data.byteLength - 0x10)
         byml_hashKeyTable = byml_parseContainerNode(fileBuf, header_hashKeyTableOffset, header_version, numMode, true)
         byml_stringTable = byml_parseContainerNode(fileBuf, header_stringTableOffset, header_version, numMode, true)
@@ -82,34 +82,34 @@ function byml_parseContainerNode (fileBuf, offset, version, numMode, zeroEmpty =
     if (version >= 0x02) {
         if (type == 0xA0) {
         } else if (type == 0xC0) {
-            let numEntries = buf.int(0x01, IntSize.U24, {endian: numMode})
+            let numEntries = buf.int(0x01, IntSize.U24, numMode)
             let nodes = []
             let typesBuf = buf.arr(0x04, numEntries)
                 let types = [...typesBuf]
             let valuesBuf = buf.buf(0x04 + (Math.ceil(numEntries / 0x04) * 0x04), 0x04 * numEntries)
                 for (let i = 0; i < numEntries; i++) {
                     let type = types[i]
-                    let value = valuesBuf.int(i * 0x04, IntSize.U32, {endian: numMode})
+                    let value = valuesBuf.int(i * 0x04, IntSize.U32, numMode)
                     nodes.push({type, value})
                 }
             return nodes
         } else if (type == 0xC1) {
-            let numEntries = buf.int(0x01, IntSize.U24, {endian: numMode})
+            let numEntries = buf.int(0x01, IntSize.U24, numMode)
             let entries = new Array(numEntries)
             for (let i = 0; i < numEntries; i++) {
                 let entry = buf.buf(0x04 + (i * 0x08), 0x08)
-                    let hashKeyIndex = entry.int(0x00, IntSize.U24, {endian: numMode})
+                    let hashKeyIndex = entry.int(0x00, IntSize.U24, numMode)
                     let type = entry.byte(3)
-                    let value = entry.int(0x04, IntSize.U32, {endian: numMode})
+                    let value = entry.int(0x04, IntSize.U32, numMode)
                 entries[i] = {type, value, hashKeyIndex}
             }
             return entries
         } else if (type == 0xC2) {
-            let numEntries = buf.int(0x01, IntSize.U24, {endian: numMode})
+            let numEntries = buf.int(0x01, IntSize.U24, numMode)
                 let offsetsArrSize = 0x04 * (numEntries + 1)
             let offsetsBuf = buf.buf(0x04, offsetsArrSize)
-                let stringsStart = offsetsBuf.int(0x00, IntSize.U32, {endian: numMode})
-                let stringsEnd = offsetsBuf.int(numEntries * 0x04, IntSize.U32, {endian: numMode})
+                let stringsStart = offsetsBuf.int(0x00, IntSize.U32, numMode)
+                let stringsEnd = offsetsBuf.int(numEntries * 0x04, IntSize.U32, numMode)
             let stringsBuf = buf.buf(stringsStart, stringsEnd - stringsStart)
                 let stringsStr = stringsBuf.str(0x00, stringsBuf.data.byteLength)
                 let strings = stringsStr.slice(0, -1).split("\x00")
@@ -158,22 +158,22 @@ function byml_parseValueNode (type, value, version, fileBuf, numMode) {
         } else if (type == 0xD0) {
             return value == 0 ? false : true
         } else if (type == 0xD1) {
-            return FileBuf.signedInt_int(value, {size: IntSize.U32, type: SignedIntBinaryType.TWOS_COMPLEMENT})
+            return FileBuf.signedInt_int(value, IntSize.U32, SignedIntBinaryType.TWOS_COMPLEMENT)
         } else if (type == 0xD2) {
-            return FileBuf.float_int(value, {precision: FloatPrecision.SINGLE})
+            return FileBuf.float_int(value, FloatPrecision.SINGLE)
         } else if (type == 0xD3) {
             return value
         }
     }
     if (version >= 3) {
         if (type == 0xD4) {
-            let realValue = fileBuf.int(value, IntSize.U64, {endian: numMode})
-            return FileBuf.signedInt_int(realValue, {size: IntSize.U64, type: SignedIntBinaryType.TWOS_COMPLEMENT})
+            let realValue = fileBuf.int(value, IntSize.U64, numMode)
+            return FileBuf.signedInt_int(realValue, IntSize.U64, SignedIntBinaryType.TWOS_COMPLEMENT)
         } else if (type == 0xD5) {
-            return fileBuf.int(value, IntSize.U64, {endian: numMode})
+            return fileBuf.int(value, IntSize.U64, numMode)
         } else if (type == 0xD6) {
-            let realValue = fileBuf.int(value, IntSize.U64, {endian: numMode})
-            return FileBuf.float_int(realValue, {precision: FloatPrecision.DOUBLE})
+            let realValue = fileBuf.int(value, IntSize.U64, numMode)
+            return FileBuf.float_int(realValue, FloatPrecision.DOUBLE)
         } else if (type == 0xFF) {
             return null
         }

@@ -23,12 +23,12 @@ function decompressFromBCSV (fileBuf) {
 
     let numMode = Endian.LITTLE
     let header = fileBuf.buf(0x00, 0x10)
-        let header_rowCount = header.int(0x00, IntSize.U32, {endian: numMode})
+        let header_rowCount = header.int(0x00, IntSize.U32, numMode)
             bcsv_rowCount = header_rowCount
-        let header_colCount = header.int(0x04, IntSize.U32, {endian: numMode})
-        let header_rowDataOffset = header.int(0x08, IntSize.U32, {endian: numMode})
+        let header_colCount = header.int(0x04, IntSize.U32, numMode)
+        let header_rowDataOffset = header.int(0x08, IntSize.U32, numMode)
             bcsv_valuesStart = header_rowDataOffset
-        let header_rowSize = header.int(0x0C, IntSize.U32, {endian: numMode})
+        let header_rowSize = header.int(0x0C, IntSize.U32, numMode)
             bcsv_rowSize = header_rowSize
     let stringTableOffset = header_rowDataOffset + (header_rowCount * header_rowSize)
     let stringTableBuf = fileBuf.buf(stringTableOffset, fileBuf.data.byteLength - stringTableOffset)
@@ -54,11 +54,11 @@ function decompressFromBCSV (fileBuf) {
 }
 function bcsv_getCol (fileBufGlobal, fileBuf, numMode, offset) {
     let col = fileBuf.buf(offset, 0x0C)
-        let nameHash = col.int(0x00, IntSize.U32, {endian: numMode})
-        let bitmask = col.int(0x04, IntSize.U32, {endian: numMode})
-        let dataOffset = col.int(0x08, IntSize.U16, {endian: numMode})
-        let shift = col.int(0x0A, IntSize.U8, {endian: numMode})
-        let dataType = col.int(0x0B, IntSize.U8, {endian: numMode})
+        let nameHash = col.int(0x00, IntSize.U32, numMode)
+        let bitmask = col.int(0x04, IntSize.U32, numMode)
+        let dataOffset = col.int(0x08, IntSize.U16, numMode)
+        let shift = col.int(0x0A, IntSize.U8, numMode)
+        let dataType = col.int(0x0B, IntSize.U8, numMode)
     let colObj = {nameHash, bitmask, dataOffset, shift, dataType}
     let values = new Array(bcsv_rowCount)
         for (let i = 0; i < bcsv_rowCount; i++) {
@@ -71,34 +71,34 @@ function bcsv_getCol (fileBufGlobal, fileBuf, numMode, offset) {
 function bcsv_getValue (fileBuf, numMode, col) {
     let offset = col.dataOffset + bcsv_valuesStart
     if (col.dataType == 0x00) {
-        let val = fileBuf.int(offset, IntSize.U32, {endian: numMode})
+        let val = fileBuf.int(offset, IntSize.U32, numMode)
         val &= col.bitmask
         val >>= col.shift
         return val
     }/* else if (col.dataType == 0x01) {
     }*/ else if (col.dataType == 0x02) {
-        let num = fileBuf.int(offset, IntSize.U32, {endian: numMode})
+        let num = fileBuf.int(offset, IntSize.U32, numMode)
         num &= col.bitmask
         num >>= col.shift
         let float = FileBuf.float_int(num)
         return float
     } else if (col.dataType == 0x03) {
-        let val = fileBuf.int(offset, IntSize.U32, {endian: numMode})
+        let val = fileBuf.int(offset, IntSize.U32, numMode)
         val &= col.bitmask
         val >>= col.shift
         return val
     } else if (col.dataType == 0x04) {
-        let val = fileBuf.int(offset, IntSize.U16, {endian: numMode})
+        let val = fileBuf.int(offset, IntSize.U16, numMode)
         val &= col.bitmask
         val >>= col.shift
         return val
     } else if (col.dataType == 0x05) {
-        let val = fileBuf.int(offset, IntSize.U8, {endian: numMode})
+        let val = fileBuf.int(offset, IntSize.U8, numMode)
         val &= col.bitmask
         val >>= col.shift
         return val
     } else if (col.dataType == 0x06) {
-        let strOffset = fileBuf.int(offset, IntSize.U32, {endian: numMode})
+        let strOffset = fileBuf.int(offset, IntSize.U32, numMode)
         strOffset &= col.bitmask
         strOffset >>= col.shift
         let str = bcsv_stringTable.str(strOffset, bcsv_stringTable.data.byteLength - strOffset)

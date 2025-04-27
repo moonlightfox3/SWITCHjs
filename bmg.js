@@ -27,10 +27,10 @@ function decompressFromBMG (fileBuf) {
             else if (header_name1 == "GSEM") numMode = Endian.LITTLE
         let header_name2 = header.str(0x04, 0x04)
             FileBuf.expectVal(header_name2, (numMode == Endian.BIG ? "bmg1" : "1gmb"), "MESG header does not start with 'bmg1' or '1gmb'")
-        let header_flw1Offset = header.int(0x08, IntSize.U32, {endian: numMode})
-        let header_sectionCount = header.int(0x0C, IntSize.U32, {endian: numMode})
+        let header_flw1Offset = header.int(0x08, IntSize.U32, numMode)
+        let header_sectionCount = header.int(0x0C, IntSize.U32, numMode)
             FileBuf.expectVal(header_sectionCount, 0x04, "MESG header states incorrect section count")
-        let header_stringEncoding = header.int(0x10, IntSize.U8, {endian: numMode})
+        let header_stringEncoding = header.int(0x10, IntSize.U8, numMode)
             let header_stringEncodingName = null
             if (header_stringEncoding == 0x00) header_stringEncodingName = "cp1252"
             else if (header_stringEncoding == 0x01) header_stringEncodingName = "cp1252"
@@ -38,11 +38,11 @@ function decompressFromBMG (fileBuf) {
             else if (header_stringEncoding == 0x03) header_stringEncodingName = "shift-jis"
             else if (header_stringEncoding == 0x04) header_stringEncodingName = "utf-8"
             bmg_stringEncoding = header_stringEncodingName
-        let header_unused = header.int(0x11, 0x15, {endian: numMode})
+        let header_unused = header.int(0x11, 0x15, numMode)
     let sections = fileBuf.buf(0x20, fileBuf.data.byteLength - 0x20)
         let sections_inf1 = bmg_getSection(sections, numMode, 0x00)
-            let inf1_messageCount = sections_inf1.section.int(0x00, IntSize.U16, {endian: numMode})
-            let inf1_idLength = sections_inf1.section.int(0x02, IntSize.U16, {endian: numMode})
+            let inf1_messageCount = sections_inf1.section.int(0x00, IntSize.U16, numMode)
+            let inf1_idLength = sections_inf1.section.int(0x02, IntSize.U16, numMode)
                 bmg_idLength = inf1_idLength
         let sections_dat1 = bmg_getSection(sections, numMode, sections_inf1.endOffset)
             bmg_dat1Offset = sections_inf1.endOffset + 0x20
@@ -63,8 +63,8 @@ function decompressFromBMG (fileBuf) {
 }
 function bmg_getSection (fileBuf, numMode, offset) {
     let base = fileBuf.buf(offset, 0x08)
-        let base_name = base.str(0x00, 0x04, {endian: numMode})
-        let base_size = base.int(0x04, IntSize.U32, {endian: numMode})
+        let base_name = base.str(0x00, 0x04, numMode)
+        let base_size = base.int(0x04, IntSize.U32, numMode)
     let section = fileBuf.buf(offset + 0x08, base_size)
     let endOffset = offset + base_size
     return {
@@ -75,7 +75,7 @@ function bmg_getSection (fileBuf, numMode, offset) {
     }
 }
 function bmg_parseInfo (fileBuf, numMode, id) {
-    let camerashort = fileBuf.int((bmg_idLength * id) + 48 + 4, IntSize.U16, {endian: numMode})
+    let camerashort = fileBuf.int((bmg_idLength * id) + 48 + 4, IntSize.U16, numMode)
     let otherinf = fileBuf.arr((bmg_idLength * id) + 48 + 4 + 2, bmg_idLength - 6)
         let otherinfStr = otherinf.toString()
     return `${camerashort},${otherinfStr}`
@@ -83,33 +83,33 @@ function bmg_parseInfo (fileBuf, numMode, id) {
 function bmg_parseText (fileBuf, numMode, id) {
     let text = ""
     let i = 0
-    let dataOffset = fileBuf.int((bmg_idLength * id) + 48, IntSize.U32, {endian: numMode})
-    let charset = fileBuf.str(bmg_dat1Offset + dataOffset + 8, 2, {endian: numMode})
+    let dataOffset = fileBuf.int((bmg_idLength * id) + 48, IntSize.U32, numMode)
+    let charset = fileBuf.str(bmg_dat1Offset + dataOffset + 8, IntSize.U16, numMode)
     while (charset != "\x00\x00") {
         let offset = bmg_dat1Offset + dataOffset + i
         if (charset == "\x00\x1A") {
             let name = "_"
             let idData = fileBuf.buf(offset + 10, 0x02)
-                let idData_0 = idData.int(0x00, IntSize.U8, {endian: numMode})
-                let idData_1 = idData.int(0x01, IntSize.U8, {endian: numMode})
+                let idData_0 = idData.int(0x00, IntSize.U8, numMode)
+                let idData_1 = idData.int(0x01, IntSize.U8, numMode)
             if (idData_1 == 0x01) { // pause
-                if (idData_0 == 8) name = fileBuf.int(offset + 12 + 2, IntSize.U16, {endian: numMode})
-                else name = fileBuf.int(offset + 12, IntSize.U16, {endian: numMode})
+                if (idData_0 == 8) name = fileBuf.int(offset + 12 + 2, IntSize.U16, numMode)
+                else name = fileBuf.int(offset + 12, IntSize.U16, numMode)
             } else if (idData_1 == 0x02) { // anim/sound
                 name = ""
                 for (let j = 2; j < idData_0 - 4; j += 2) name += fileBuf.str(offset + j + 12 + 1, 1)
             } else if (idData_1 == 0x03) { // emoji
-                name = fileBuf.int(offset + 12, IntSize.U16, {endian: numMode})
+                name = fileBuf.int(offset + 12, IntSize.U16, numMode)
             } else if (idData_1 == 0x04) { // size
-                name = fileBuf.int(offset + 12, IntSize.U16, {endian: numMode})
+                name = fileBuf.int(offset + 12, IntSize.U16, numMode)
             } else if (idData_1 == 0x05) { // plumber
-                name = Math.round(fileBuf.int(offset + 12, IntSize.U32, {endian: numMode}) / 256)
+                name = Math.round(fileBuf.int(offset + 12, IntSize.U32, numMode) / 256)
             } else if (idData_1 == 0x06 || idData_1 == 0x07) { // number/systext
                 let bytes = fileBuf.buf(offset + 12, 0x0A)
-                if (numMode == Endian.BIG) name = `${bytes.int(0x01, IntSize.U8, {endian: numMode})},${bytes.int(0x09, IntSize.U8, {endian: numMode})}`
-                else if (numMode == Endian.LITTLE) name = `${bytes.int(0x00, IntSize.U8, {endian: numMode})},${bytes.int(0x06, IntSize.U8, {endian: numMode})}`
+                if (numMode == Endian.BIG) name = `${bytes.int(0x01, IntSize.U8, numMode)},${bytes.int(0x09, IntSize.U8, numMode)}`
+                else if (numMode == Endian.LITTLE) name = `${bytes.int(0x00, IntSize.U8, numMode)},${bytes.int(0x06, IntSize.U8, numMode)}`
             } else if (idData_1 == 0x09) { // race time
-                let arr = fileBuf.arr(offset + 12, IntSize.U16, {endian: numMode})
+                let arr = fileBuf.arr(offset + 12, IntSize.U16, numMode)
                 name = arr.toString()
             } else if (idData_1 == 0xFF) { // color
                 name = Math.round(fileBuf.int(offset + 12, IntSize.U32, Endian.BIG) / 256)
@@ -119,11 +119,11 @@ function bmg_parseText (fileBuf, numMode, id) {
             text += `<${type}=${name}>`
             i += idData_0
         } else {
-            let newCharset = fileBuf.str(offset + 8, 2, {endian: numMode, encoding: bmg_stringEncoding})
+            let newCharset = fileBuf.str(offset + 8, 2, numMode, bmg_stringEncoding)
             text += newCharset
             i += 2
         }
-        charset = fileBuf.str(bmg_dat1Offset + dataOffset + i + 8, 2, {endian: numMode})
+        charset = fileBuf.str(bmg_dat1Offset + dataOffset + i + 8, 2, numMode)
     }
     return text
 }

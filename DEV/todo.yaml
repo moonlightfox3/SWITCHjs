@@ -1,4 +1,4 @@
-explorer.html:
+explorer.html
     allow downloading folders in addition to files
 
     add file viewers
@@ -6,8 +6,8 @@ explorer.html:
         json
         csv
         hex
-converters:
-    allow resaving same Nintendo file type:
+converters
+    allow resaving same Nintendo file type
         choose little or big endian
         does not allow importing new file (too complicated for now)
         eventually, allow converting common file types to Nintendo file types

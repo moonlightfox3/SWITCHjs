@@ -15,8 +15,8 @@ function decompressFromYaz0 (fileBuf) {
     let header = fileBuf.buf(0x00, 0x10)
         let header_name = header.str(0x00, 0x04)
             FileBuf.expectVal(header_name, "Yaz0", "Yaz0 header does not start with 'Yaz0'")
-        let header_outSize = header.int(0x04, IntSize.U32, {endian: Endian.BIG})
-        let header_unused = header.int(0x08, IntSize.U16, {endian: Endian.BIG})
+        let header_outSize = header.int(0x04, IntSize.U32, Endian.BIG)
+        let header_unused = header.int(0x08, IntSize.U16, Endian.BIG)
     let src = fileBuf.buf(0x10, fileBuf.data.byteLength - 0x10)
         let out = new Uint8Array(header_outSize)
         let srcPos = outPos = 0
@@ -24,7 +24,7 @@ function decompressFromYaz0 (fileBuf) {
             let code = src.byte(srcPos)
                 srcPos++
             for (let i = 0; i < 8; i++) {
-                let bit = FileBuf.bit_byte(code, {offset: i})
+                let bit = FileBuf.bit_byte(code, i)
                 if (bit == 1) {
                     let copy = src.byte(srcPos)
                         srcPos++
@@ -33,8 +33,8 @@ function decompressFromYaz0 (fileBuf) {
                 } else if (bit == 0) {
                     let byte1 = src.byte(srcPos)
                         srcPos++
-                        let a = FileBuf.nibble_byte(byte1, {offset: 0})
-                        let b = FileBuf.nibble_byte(byte1, {offset: 1})
+                        let a = FileBuf.nibble_byte(byte1, 0)
+                        let b = FileBuf.nibble_byte(byte1, 1)
                     let byte2 = src.byte(srcPos)
                         srcPos++
                     

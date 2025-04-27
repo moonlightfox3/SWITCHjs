@@ -82,7 +82,7 @@ function getFileType (fileBuf, fileExt) {
     
     else if (fileBuf.str(0x00, 0x04) == "SARC") {
         let mode = null
-        let byteOrder = fileBuf.int(0x06, IntSize.U16, {endian: Endian.BIG})
+        let byteOrder = fileBuf.int(0x06, IntSize.U16, Endian.BIG)
             byteOrder = byteOrder.toString(16)
             if (byteOrder == "feff") mode = Endian.BIG
             else if (byteOrder == "fffe") mode = Endian.LITTLE
@@ -102,12 +102,12 @@ function getFileType (fileBuf, fileExt) {
     
     else if (fileBuf.str(0x00, 0x02) == "BY") {
         let mode = Endian.BIG
-        let ver = fileBuf.int(0x02, IntSize.U16, {endian: mode})
+        let ver = fileBuf.int(0x02, IntSize.U16, mode)
         name = `BYML_${mode}_V${ver}`
         ext = "byml"
     } else if (fileBuf.str(0x00, 0x02) == "YB") {
         let mode = Endian.LITTLE
-        let ver = fileBuf.int(0x02, IntSize.U16, {endian: mode})
+        let ver = fileBuf.int(0x02, IntSize.U16, mode)
         name = `BYML_${mode}_V${ver}`
         ext = "byml"
     }
