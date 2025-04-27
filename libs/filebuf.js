@@ -62,11 +62,8 @@ class FileBuf {
     
     static float_int (inVal, options = {precision: FloatPrecision.SINGLE}) {
         let inHex = inVal.toString(16)
-            let inHex_b1 = inHex.substring(0, 2)
-            let inHex_b2 = inHex.substring(2, 4)
-            let inHex_b3 = inHex.substring(4, 6)
-            let inHex_b4 = inHex.substring(6, 8)
-            let inBin = [inHex_b1, inHex_b2, inHex_b3, inHex_b4].map(val => parseInt(val, 16).toString(2).padStart(8, "0")).join("")
+            let inBin = ""
+            for (let i = 0; i < inHex.length; i += 2) inBin += parseInt(inHex.substring(i, i + 2), 16).toString(2).padStart(8, "0")
 
         let binSign = inBin.substring(0, 1)
             let outFloat_sign = (-1) ** parseInt(binSign, 2)
