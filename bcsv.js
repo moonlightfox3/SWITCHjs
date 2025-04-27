@@ -111,9 +111,8 @@ function bcsv_getValue (fileBuf, numMode, col) {
 function bcsv_calcNameHash (name) {
     let hash = new Uint32Array(1) // array used to limit value to u32
     for (let charStr of name) {
-        let char = charStr.charCodeAt(0)
-        char |= (char & 0x80 ? ~0xFF : 0)
-        hash[0] = (hash[0] * 31) + char
+        hash[0] *= 0x1F
+        hash[0] += charStr.charCodeAt(0)
     }
     return hash[0]
 }
