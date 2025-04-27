@@ -56,7 +56,7 @@ class FileBuf {
     }
     byte (offset, size, options = {}) {
         let inCls = this.buf(offset, 1)
-        let outByte = inCls.int(0, 1)
+        let outByte = inCls.int(0, IntSize.U8)
         return outByte
     }
     
