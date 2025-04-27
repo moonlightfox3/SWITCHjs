@@ -2,7 +2,7 @@ let profileExpanded = false
 addEventListener("load", function () {
     profile = document.createElement("div")
     profile.id = "profile"
-    profile.innerHTML = `SWITCHjs, made by <i>moonlightfox3</i>. [<a class="profileLink" target="_blank" href="https://github.com/JoeCoding3/SWITCHjs"><b>GitHub repo here</b></a>]`
+    profile.innerHTML = `SWITCHjs, made by <i>moonlightfox3</i>. [<a class="profileLink" target="_blank" href="https://github.com/moonlightfox3/SWITCHjs"><b>GitHub repo here</b></a>]`
     profileExpand = document.createElement("div")
     profileExpand.id = "profileExpand"
     profileExpand.innerHTML = `<b>i</b>`
