@@ -36,7 +36,6 @@ class FileBuf {
         let outArr = new Uint8Array(inBuf.data)
         if (endian == Endian.BIG) null
         else if (endian == Endian.LITTLE) outArr.reverse()
-        this.pointer += size
         return outArr
     }
     
@@ -46,7 +45,6 @@ class FileBuf {
         let outStr = new TextDecoder(encoding).decode(inBuf)
         if (endian == Endian.BIG) null
         else if (endian == Endian.LITTLE) outStr = outStr.split("").reverse().join("")
-        this.pointer += size
         return outStr
     }
 
@@ -56,13 +54,11 @@ class FileBuf {
         let outStr = ""
         for (let inInt of inArr) outStr += inInt.toString(16).padStart(2, "0")
         let outInt = parseInt(outStr, 16)
-        this.pointer += size
         return outInt
     }
     byte (offset) {
         let inCls = this.buf(offset, 1)
         let outByte = inCls.int(0, IntSize.U8)
-        this.pointer++
         return outByte
     }
     
@@ -155,7 +151,6 @@ class FileBufWriter {
     arr (offset, inData) {
         let inArr = new Uint8Array(inData)
         this.buf(offset, inArr)
-        this.pointer += inArr.length
         return inArr.length
     }
 
@@ -164,7 +159,6 @@ class FileBufWriter {
         if (endian == Endian.BIG) null
         else if (endian == Endian.LITTLE) outArr = outArr.reverse()
         this.buf(offset, outArr.buffer)
-        this.pointer += outArr.length
         return outArr.length
     }
     
@@ -180,13 +174,11 @@ class FileBufWriter {
         if (endian == Endian.BIG) null
         else if (endian == Endian.LITTLE) outArr = outArr.reverse()
         this.buf(offset, outArr.buffer)
-        this.pointer += inLength
         return inLength
     }
     byte (offset, inData) {
         let outBuf = new Uint8Array([inData]).buffer
         this.buf(offset, outBuf)
-        this.pointer++
         return 1
     }
 }
