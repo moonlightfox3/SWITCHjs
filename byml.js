@@ -1,6 +1,6 @@
 let resultBYML = null
 let resultNameBYML = null
-let inFileTypesBYML = ["byml", "bgyml"]
+let inFileTypesBYML = ["byml", "bgyml", "byaml"]
 let outFileTypeBYML = "json"
 async function decompressFileFromBYML () {
     let file = await importFile(inFileTypesBYML)
