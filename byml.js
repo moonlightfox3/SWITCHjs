@@ -79,6 +79,19 @@ function byml_parseContainerNode (fileBuf, offset, version, numMode, zeroEmpty =
 
     let type = fileBuf.byte(offset)
     let buf = fileBuf.buf(offset, fileBuf.data.byteLength - offset)
+    if (version >= 0x01) {
+        if (type == 0xC2) {
+            let numEntries = buf.int(0x01, IntSize.U24, numMode)
+                let offsetsArrSize = 0x04 * (numEntries + 1)
+            let offsetsBuf = buf.buf(0x04, offsetsArrSize)
+                let stringsStart = offsetsBuf.int(0x00, IntSize.U32, numMode)
+                let stringsEnd = offsetsBuf.int(numEntries * 0x04, IntSize.U32, numMode)
+            let stringsBuf = buf.buf(stringsStart, stringsEnd - stringsStart)
+                let stringsStr = stringsBuf.str(0x00, stringsBuf.data.byteLength)
+                let strings = stringsStr.slice(0, -1).split("\x00")
+            return strings
+        }
+    }
     if (version >= 0x02) {
         if (type == 0xA0) {
         } else if (type == 0xC0) {
@@ -104,38 +117,28 @@ function byml_parseContainerNode (fileBuf, offset, version, numMode, zeroEmpty =
                 entries[i] = {type, value, hashKeyIndex}
             }
             return entries
-        } else if (type == 0xC2) {
-            let numEntries = buf.int(0x01, IntSize.U24, numMode)
-                let offsetsArrSize = 0x04 * (numEntries + 1)
-            let offsetsBuf = buf.buf(0x04, offsetsArrSize)
-                let stringsStart = offsetsBuf.int(0x00, IntSize.U32, numMode)
-                let stringsEnd = offsetsBuf.int(numEntries * 0x04, IntSize.U32, numMode)
-            let stringsBuf = buf.buf(stringsStart, stringsEnd - stringsStart)
-                let stringsStr = stringsBuf.str(0x00, stringsBuf.data.byteLength)
-                let strings = stringsStr.slice(0, -1).split("\x00")
-            return strings
         } else if (type == 0xD0) {
         } else if (type == 0xD1) {
         } else if (type == 0xD2) {
         } else if (type == 0xD3) {
         }
     }
-    if (version >= 3) {
+    if (version >= 0x03) {
         if (type == 0xD4) {
         } else if (type == 0xD5) {
         } else if (type == 0xD6) {
         } else if (type == 0xFF) {
         }
     }
-    if (version >= 4) {
+    if (version >= 0x04) {
         if (type == 0xA1) {
         }
     }
-    if (version >= 5) {
+    if (version >= 0x05) {
         if (type == 0xA2) {
         }
     }
-    if (version >= 7) {
+    if (version >= 0x07) {
         if (type == 0x20) {
             // not implemented
         } else if (type == 0x21) {
@@ -146,14 +149,17 @@ function byml_parseContainerNode (fileBuf, offset, version, numMode, zeroEmpty =
     FileBuf.expectVal(0, 1, `Invalid or not implemented node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse container node. File offset: 0x${offset.toString(16).toUpperCase()} (${offset}).`)
 }
 function byml_parseValueNode (type, value, version, fileBuf, numMode) {
-    if (version >= 2) {
+    if (version >= 0x01) {
+        if (type == 0xC2) {
+            return undefined
+        }
+    }
+    if (version >= 0x02) {
         if (type == 0xA0) {
             return byml_stringTable[value]
         } else if (type == 0xC0) {
             return undefined
         } else if (type == 0xC1) {
-            return undefined
-        } else if (type == 0xC2) {
             return undefined
         } else if (type == 0xD0) {
             return value == 0 ? false : true
@@ -165,7 +171,7 @@ function byml_parseValueNode (type, value, version, fileBuf, numMode) {
             return value
         }
     }
-    if (version >= 3) {
+    if (version >= 0x03) {
         if (type == 0xD4) {
             let realValue = fileBuf.int(value, IntSize.U64, numMode)
             return FileBuf.signedInt_int(realValue, IntSize.U64, SignedIntBinaryType.TWOS_COMPLEMENT)
@@ -178,17 +184,17 @@ function byml_parseValueNode (type, value, version, fileBuf, numMode) {
             return null
         }
     }
-    if (version >= 4) {
+    if (version >= 0x04) {
         if (type == 0xA1) {
             // not implemented
         }
     }
-    if (version >= 5) {
+    if (version >= 0x05) {
         if (type == 0xA2) {
             // not implemented
         }
     }
-    if (version >= 7) {
+    if (version >= 0x07) {
         if (type == 0x20) {
             return undefined
         } else if (type == 0x21) {
@@ -199,15 +205,18 @@ function byml_parseValueNode (type, value, version, fileBuf, numMode) {
     FileBuf.expectVal(0, 1, `Invalid or not implemented node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse value node.`)
 }
 function byml_getContainerNodeType (type, version) {
-    if (version >= 2) {
+    if (version >= 0x01) {
+        if (type == 0xC2) {
+            return undefined
+        }
+    }
+    if (version >= 0x02) {
         if (type == 0xA0) {
             return undefined
         } else if (type == 0xC0) {
             return []
         } else if (type == 0xC1) {
             return {}
-        } else if (type == 0xC2) {
-            return undefined
         } else if (type == 0xD0) {
             return undefined
         } else if (type == 0xD1) {
@@ -218,7 +227,7 @@ function byml_getContainerNodeType (type, version) {
             return undefined
         }
     }
-    if (version >= 3) {
+    if (version >= 0x03) {
         if (type == 0xD4) {
             return undefined
         } else if (type == 0xD5) {
@@ -229,17 +238,17 @@ function byml_getContainerNodeType (type, version) {
             return undefined
         }
     }
-    if (version >= 4) {
+    if (version >= 0x04) {
         if (type == 0xA1) {
             return undefined
         }
     }
-    if (version >= 5) {
+    if (version >= 0x05) {
         if (type == 0xA2) {
             return undefined
         }
     }
-    if (version >= 7) {
+    if (version >= 0x07) {
         if (type == 0x20) {
             // not implemented
         } else if (type == 0x21) {
