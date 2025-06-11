@@ -20,7 +20,7 @@ function decompressFromBYML (fileBuf) {
     byml_fileStructure = null
 
     let numMode = null
-    let header = fileBuf.buf(0x00, 0x10)
+    let header = fileBuf.buf(0x00, 0x14)
         let header_name = header.str(0x00, 0x02)
             FileBuf.expectVal(header_name, ["BY", "YB"], "BYML header does not start with 'BY' or 'YB'")
             if (header_name == "BY") numMode = Endian.BIG
@@ -29,6 +29,10 @@ function decompressFromBYML (fileBuf) {
         let header_hashKeyTableOffset = header.int(0x04, IntSize.U32, numMode)
         let header_stringTableOffset = header.int(0x08, IntSize.U32, numMode)
         let header_rootNodeOffset = header.int(0x0C, IntSize.U32, numMode)
+        if (header_version == 0x01) {
+            if (header_rootNodeOffset == 0x0) header_rootNodeOffset = header.int(0x10, IntSize.U32, numMode)
+            else FileBuf.expectVal(0, 1, "Not implemented (version 0x01 header difference)")
+        }
     let src = fileBuf.buf(0x10, fileBuf.data.byteLength - 0x10)
         byml_hashKeyTable = byml_parseContainerNode(fileBuf, header_hashKeyTableOffset, header_version, numMode, true)
         byml_stringTable = byml_parseContainerNode(fileBuf, header_stringTableOffset, header_version, numMode, true)
@@ -80,19 +84,6 @@ function byml_parseContainerNode (fileBuf, offset, version, numMode, zeroEmpty =
     let type = fileBuf.byte(offset)
     let buf = fileBuf.buf(offset, fileBuf.data.byteLength - offset)
     if (version >= 0x01) {
-        if (type == 0xC2) {
-            let numEntries = buf.int(0x01, IntSize.U24, numMode)
-                let offsetsArrSize = 0x04 * (numEntries + 1)
-            let offsetsBuf = buf.buf(0x04, offsetsArrSize)
-                let stringsStart = offsetsBuf.int(0x00, IntSize.U32, numMode)
-                let stringsEnd = offsetsBuf.int(numEntries * 0x04, IntSize.U32, numMode)
-            let stringsBuf = buf.buf(stringsStart, stringsEnd - stringsStart)
-                let stringsStr = stringsBuf.str(0x00, stringsBuf.data.byteLength)
-                let strings = stringsStr.slice(0, -1).split("\x00")
-            return strings
-        }
-    }
-    if (version >= 0x02) {
         if (type == 0xA0) {
         } else if (type == 0xC0) {
             let numEntries = buf.int(0x01, IntSize.U24, numMode)
@@ -117,6 +108,16 @@ function byml_parseContainerNode (fileBuf, offset, version, numMode, zeroEmpty =
                 entries[i] = {type, value, hashKeyIndex}
             }
             return entries
+        } else if (type == 0xC2) {
+            let numEntries = buf.int(0x01, IntSize.U24, numMode)
+                let offsetsArrSize = 0x04 * (numEntries + 1)
+            let offsetsBuf = buf.buf(0x04, offsetsArrSize)
+                let stringsStart = offsetsBuf.int(0x00, IntSize.U32, numMode)
+                let stringsEnd = offsetsBuf.int(numEntries * 0x04, IntSize.U32, numMode)
+            let stringsBuf = buf.buf(stringsStart, stringsEnd - stringsStart)
+                let stringsStr = stringsBuf.str(0x00, stringsBuf.data.byteLength)
+                let strings = stringsStr.slice(0, -1).split("\x00")
+            return strings
         } else if (type == 0xD0) {
         } else if (type == 0xD1) {
         } else if (type == 0xD2) {
@@ -150,16 +151,13 @@ function byml_parseContainerNode (fileBuf, offset, version, numMode, zeroEmpty =
 }
 function byml_parseValueNode (type, value, version, fileBuf, numMode) {
     if (version >= 0x01) {
-        if (type == 0xC2) {
-            return undefined
-        }
-    }
-    if (version >= 0x02) {
         if (type == 0xA0) {
             return byml_stringTable[value]
         } else if (type == 0xC0) {
             return undefined
         } else if (type == 0xC1) {
+            return undefined
+        } else if (type == 0xC2) {
             return undefined
         } else if (type == 0xD0) {
             return value == 0 ? false : true
@@ -206,17 +204,14 @@ function byml_parseValueNode (type, value, version, fileBuf, numMode) {
 }
 function byml_getContainerNodeType (type, version) {
     if (version >= 0x01) {
-        if (type == 0xC2) {
-            return undefined
-        }
-    }
-    if (version >= 0x02) {
         if (type == 0xA0) {
             return undefined
         } else if (type == 0xC0) {
             return []
         } else if (type == 0xC1) {
             return {}
+        } else if (type == 0xC2) {
+            return undefined
         } else if (type == 0xD0) {
             return undefined
         } else if (type == 0xD1) {
