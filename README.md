@@ -1,6 +1,6 @@
 ## This contains conversion/decompression tools for some Nintendo Switch file formats.
 These tools (currently) can only convert files *from* Nintendo Switch formats into more easily usable ones. They cannot convert back *to* Nintendo Switch formats.  
-*Note: These tools were each made for some of the **Nintendo Switch** games **MK8D**, **SMG1 (in SM3DAS)**, **SM3DW+BF**, **SMBW**, **SMM2**, and **SMO**. They may or may not work with files from other games or consoles.*
+*Note: These tools were each made for some of the **Nintendo Switch** games **MK8D**, **SMG1 (in SM3DAS)**, **SM3DW+BF**, **SMBW**, **SMM2**, **SMO**, and **TOTK**. They may or may not work with files from other games or consoles.*
 
 ### Credits: These are the wiki documentation pages I used to create these converters.
 YAZ0: [amnoid.de](http://www.amnoid.de/gc/yaz0.txt) \
