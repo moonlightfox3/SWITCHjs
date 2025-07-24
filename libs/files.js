@@ -1,3 +1,60 @@
+// fallbacks
+if (window.showOpenFilePicker == undefined) {
+    window.showOpenFilePicker = async function (options) {
+        let el = document.createElement("input"); el.type = "file"
+        el.multiple = options?.multiple ?? false
+        let types = options?.types?.[0]?.accept["*/*"] ?? []
+        el.accept = types.join(",")
+        return new Promise(function (resolve) {
+            el.onchange = function () {
+                let files = [...el.files].map(val => {return {
+                    kind: "file",
+                    name: val.name,
+                    getFile: async function () {
+                        return val
+                    },
+                }})
+                el.remove()
+
+                if (options?.excludeAcceptAllOption && files.find(val => {
+                    let dotIndex = val.name.lastIndexOf(".")
+                    if (dotIndex > -1) {
+                        let ext = val.name.substring(dotIndex)
+                        return !types.includes(ext)
+                    }
+                }) != undefined) throw new Error("Failed to execute 'showOpenFilePicker' on 'Window': The user selected a file with the wrong extension.", "AbortError")
+                resolve(files)
+            }
+            el.oncancel = function () {
+                el.remove()
+                throw new DOMException("Failed to execute 'showOpenFilePicker' on 'Window': The user aborted a request.", "AbortError")
+            }
+            el.click()
+        })
+    }
+}
+if (window.showSaveFilePicker == undefined) {
+    window.showSaveFilePicker = async function (options) {
+        let el = document.createElement("a")
+        el.download = options?.suggestedName ?? "download"
+        return {
+            createWritable: async function () {
+                return {
+                    write: async function (data) {
+                        let url = URL.createObjectURL(new Blob([data]))
+                        el.href = url
+                    },
+                    close: async function () {
+                        el.click()
+                        URL.revokeObjectURL(el.href)
+                        el.remove()
+                    },
+                }
+            },
+        }
+    }
+}
+
 async function importFile (exts) {
     for (let index in exts) exts[index] = `.${exts[index]}`
 
@@ -13,17 +70,14 @@ async function importFile (exts) {
     })
     let file = await handle.getFile()
     let buf = await file.arrayBuffer()
-    let fileName = file.name
-        let dotIndex = fileName.lastIndexOf(".")
-        let name = null
-        let ext = null
-        if (dotIndex == -1) {
-            ext = ""
-            name = fileName
-        } else {
-            ext = fileName.substring(dotIndex + 1)
-            name = fileName.substring(0, dotIndex)
-        }
+
+    let name = file.name
+    let ext = ""
+    let dotIndex = file.name.lastIndexOf(".")
+    if (dotIndex > -1) {
+        ext = file.name.substring(dotIndex + 1)
+        name = file.name.substring(0, dotIndex)
+    }
     return {buf, name, ext}
 }
 

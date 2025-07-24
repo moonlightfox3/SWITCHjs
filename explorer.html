@@ -9,7 +9,7 @@
 
 <script src="./libs/filebuf.js"></script>
 <script src="./libs/files.js"></script>
-<script src="https://stuk.github.io/jszip/dist/jszip.min.js"></script>
+<script src="./libs/decompression.js"></script>
 <script src="./yaz0.js"></script>
 <script src="./sarc.js"></script>
 <script src="./rarc.js"></script>
@@ -74,29 +74,8 @@
         openZipBtn.remove()
     }
     openZipBtn.onclick = async function () {
-        let obj = {}
         let file = await importFile(["zip"])
-        let zip = await JSZip.loadAsync(file.buf)
-        let files = zip.files
-        for (let key of Object.keys(files)) {
-            let file = files[key]
-            let isFolder = file.dir
-            let fullName = file.name
-
-            let currentPath = obj
-            let nameParts = fullName.split("/")
-            if (isFolder) nameParts = nameParts.slice(0, -1)
-            let dirParts = nameParts.slice(0, -1)
-            for (let dirPart of dirParts) {
-                if (currentPath[dirPart] == undefined) currentPath[dirPart] = {}
-                currentPath = currentPath[dirPart]
-            }
-            if (!isFolder) {
-                let fileName = nameParts.at(-1)
-                let fileData = await file.async("arraybuffer")
-                currentPath[fileName] = fileData
-            }
-        }
+        let obj = zipFileDecompress(file.buf)
 
         let list = addList(structure)
         addObj(list, obj)
