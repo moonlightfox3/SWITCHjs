@@ -55,12 +55,12 @@ if (window.showSaveFilePicker == undefined) {
     }
 }
 
-async function importFile (exts) {
+async function importFile (exts, excludeAcceptAllOption = false) {
     for (let index in exts) exts[index] = `.${exts[index]}`
 
     let [handle] = await showOpenFilePicker({
         multiple: false,
-        excludeAcceptAllOption: false,
+        excludeAcceptAllOption,
         types: [{
             accept: {
                 "*/*": exts,
@@ -81,12 +81,12 @@ async function importFile (exts) {
     return {buf, name, ext}
 }
 
-async function exportFile (buf, name, ext) {
+async function exportFile (buf, name, ext, excludeAcceptAllOption = false) {
     let handle = null
     if (ext != "") {
         handle = await showSaveFilePicker({
             suggestedName: `${name}.${ext}`,
-            excludeAcceptAllOption: false,
+            excludeAcceptAllOption,
             types: [{
                 accept: {
                     "*/*": [`.${ext}`],
@@ -97,7 +97,7 @@ async function exportFile (buf, name, ext) {
     } else {
         handle = await showSaveFilePicker({
             suggestedName: `${name}`,
-            excludeAcceptAllOption: false,
+            excludeAcceptAllOption,
             types: [{
                 accept: {},
                 description: ":",

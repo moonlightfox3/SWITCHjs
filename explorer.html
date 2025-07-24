@@ -74,7 +74,7 @@
         openZipBtn.remove()
     }
     openZipBtn.onclick = async function () {
-        let file = await importFile(["zip"])
+        let file = await importFile(["zip"], true)
         let obj = zipFileDecompress(file.buf)
 
         let list = addList(structure)
