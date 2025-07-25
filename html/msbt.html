@@ -1,0 +1,22 @@
+<!doctype html>
+<title>MSBT (.msbt) to JSON (.json) | SWITCHjs</title>
+<link rel="stylesheet" href="./style/style.css">
+<link rel="icon" href="./style/icon.png">
+<script src="../libs/profile.js"></script>
+
+<button id="openBtn" autofocus>MSBT (.msbt) to JSON (.json)</button>
+<button id="downloadBtn" disabled>Download result</button>
+
+<script src="../libs/filebuf.js"></script>
+<script src="../libs/files.js"></script>
+<script src="../msbt.js"></script>
+<script>
+    openBtn.onclick = async function () {
+        await decompressFileFromMSBT()
+        downloadBtn.disabled = false
+        downloadBtn.focus()
+    }
+    downloadBtn.onclick = async function () {
+        await downloadResultMSBT()
+    }
+</script>

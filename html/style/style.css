@@ -14,6 +14,8 @@ body, ::selection {
 button {
     background-color: lightgray;
     border-radius: 5px;
+}
+button:not([disabled]) {
     cursor: pointer;
 }
 li {

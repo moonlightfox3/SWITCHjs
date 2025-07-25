@@ -21,37 +21,29 @@ function decompressFromYaz0 (fileBuf) {
         let out = new Uint8Array(header_outSize)
         let srcPos = outPos = 0
         while (outPos < header_outSize) {
-            let code = src.byte(srcPos)
-                srcPos++
+            let code = src.byte(srcPos); srcPos++
             for (let i = 0; i < 8; i++) {
                 let bit = FileBuf.bit_byte(code, i)
                 if (bit == 1) {
-                    let copy = src.byte(srcPos)
-                        srcPos++
-                    out[outPos] = copy
-                        outPos++
+                    let copy = src.byte(srcPos); srcPos++
+                    out[outPos] = copy; outPos++
                 } else if (bit == 0) {
-                    let byte1 = src.byte(srcPos)
-                        srcPos++
+                    let byte1 = src.byte(srcPos); srcPos++
                         let a = FileBuf.nibble_byte(byte1, 0)
                         let b = FileBuf.nibble_byte(byte1, 1)
-                    let byte2 = src.byte(srcPos)
-                        srcPos++
+                    let byte2 = src.byte(srcPos); srcPos++
                     
                     let count = a
                         if (count == 0) {
-                            let byte3 = src.byte(srcPos)
-                                srcPos++
+                            let byte3 = src.byte(srcPos); srcPos++
                             count = byte3 + 0b00010010
                         } else count += 2
                     let moveDist = ((b << 8) | byte2) + 1
 
                     let copyPos = outPos - moveDist
                     for (let i = 0; i < count; i++) {
-                        let copy = out[copyPos]
-                            copyPos++
-                        out[outPos] = copy
-                            outPos++
+                        let copy = out[copyPos]; copyPos++
+                        out[outPos] = copy; outPos++
                     }
                 }
             }
