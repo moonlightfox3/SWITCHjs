@@ -172,6 +172,16 @@ function getFileType (fileBuf, fileExt) {
         ext = fileExt
     }
 
+    else if (fileBuf.str(0x00, 0x08) == "MsgStdBn") {
+        let mode = null
+        let byteOrder = fileBuf.int(0x08, IntSize.U16, Endian.BIG)
+            byteOrder = byteOrder.toString(16)
+            if (byteOrder == "feff") mode = Endian.BIG
+            else if (byteOrder == "fffe") mode = Endian.LITTLE
+        name = `MSBT_${mode}`
+        ext = "msbt"
+    }
+
     else if (fileBuf.str(0x00, 0x04) == "MESG") {
         let mode = Endian.BIG
         name = `BMG_${mode}`
