@@ -121,7 +121,7 @@ class FileBuf {
     }
     
     static expectVal (inVal, checkVals, msg) {
-        if (typeof checkVals != "object") checkVals = [checkVals]
+        if (!(checkVals instanceof Array)) checkVals = [checkVals]
 
         let found = false
         for (let check of checkVals) {
