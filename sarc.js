@@ -25,6 +25,7 @@ function decompressFromSARC (fileBuf) {
         let sarc_version = sarc.int(0x10, IntSize.U16, numMode)
             FileBuf.expectVal(sarc_version, 0x100, "SARC header states incorrect version")
         let sarc_fileSize = sarc.int(0x08, IntSize.U32, numMode)
+            FileBuf.expectVal(sarc_fileSize, fileBuf.data.byteLength, "SARC header states invalid file size")
         let sarc_dataOffset = sarc.int(0x0C, IntSize.U32, numMode)
         let sarc_unused = sarc.int(0x12, IntSize.U16, numMode)
     let sfat = fileBuf.buf(0x14, 0x0C)

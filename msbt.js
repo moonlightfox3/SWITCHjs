@@ -33,7 +33,7 @@ function decompressFromMSBT (fileBuf) {
         let header_blockCount = header.int(0x0E, IntSize.U16, numMode)
         let header_padding2 = header.int(0x10, IntSize.U16, numMode)
         let header_fileSize = header.int(0x12, IntSize.U32, numMode)
-            if (header_fileSize != fileBuf.data.byteLength) FileBuf.expectVal(0, 1, "MSBT header states invalid file size")
+            FileBuf.expectVal(header_fileSize, fileBuf.data.byteLength, "MSBT header states invalid file size")
         let header_padding3 = header.int(0x16, 10, numMode)
     let src = fileBuf.buf(0x20, fileBuf.data.byteLength - 0x20)
         let labels = null
@@ -47,7 +47,7 @@ function decompressFromMSBT (fileBuf) {
 
             let block = src.buf(srcBlockPointer, size)
                 if (id == "LBL1") { // labels
-                    if (labels != null) FileBuf.expectVal(0, 1, "Duplicate LBL1 block")
+                    FileBuf.expectVal(labels, null, "Duplicate LBL1 block")
                     labels = []
                     
                     let labelGroupCount = block.int(0x00, IntSize.U32, numMode)
@@ -71,7 +71,7 @@ function decompressFromMSBT (fileBuf) {
                         }
                     }
                 } else if (id == "TXT2") { // text
-                    if (messages != null) FileBuf.expectVal(0, 1, "Duplicate TXT2 block")
+                    FileBuf.expectVal(messages, null, "Duplicate TXT2 block")
                     messages = []
 
                     let messageCount = block.int(0x00, IntSize.U32, numMode)
@@ -113,7 +113,7 @@ function decompressFromMSBT (fileBuf) {
                 } else FileBuf.expectVal(0, 1, "Invalid or unknown block ID")
             srcBlockPointer = Math.ceil((srcBlockPointer + size) / 16) * 16
         }
-        if (srcBlockPointer + 0x20 != fileBuf.data.byteLength) FileBuf.expectVal(0, 1, "Invalid file layout")
+        FileBuf.expectVal(srcBlockPointer + 0x20, fileBuf.data.byteLength, "Invalid file layout")
         if (labels == null) FileBuf.expectVal(0, 1, "Missing required block LBL1")
         if (messages == null) FileBuf.expectVal(0, 1, "Missing required block TXT2")
     let out = []
