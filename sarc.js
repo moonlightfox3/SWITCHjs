@@ -71,9 +71,14 @@ function decompressFromSARC (fileBuf) {
         }
     let outObj = {}
         for (let i = 0; i < sfat_nodeCount; i++) {
-            let name = fileNamesList[i]
             let data = fileDatasList[i].data
-            outObj[name] = data
+            let name = fileNamesList[i].split("/")
+            let currentPath = outObj
+            for (let namePart of name.slice(0, -1)) {
+                if (currentPath[namePart] == undefined) currentPath[namePart] = {}
+                currentPath = currentPath[namePart]
+            }
+            currentPath[name.at(-1)] = data
         }
     return outObj
 }

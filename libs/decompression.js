@@ -1,4 +1,6 @@
-// Some synchronous decompression, decoding, and decryption functions.
+// Some synchronous functions.
+
+/* ***** DECOMPRESSION ***** */
 function gzipDecompress (arrBuf) { // GZIP spec: https://datatracker.ietf.org/doc/html/rfc1952
     let members = []
     let buf = new Uint8Array(arrBuf)
@@ -237,51 +239,6 @@ function decodeHuffmanCode (tree, readBitsCallback) { // readBitsCallback is pas
         rawVal += readBitsCallback(1).toString(2) // Get another bit
     }
 }
-function makeCRC32Table () { // Initializes the CRC32 table
-    let crc32Table = []
-    let temp = null
-    for (let i = 0; i < 256; i++) {
-        temp = i
-        for (let j = 0; j < 8; j++) temp = ((temp & 1) ? (0xEDB88320 ^ (temp >>> 1)) : (temp >>> 1))
-        crc32Table[i] = temp
-    }
-    return crc32Table
-}
-const crc32Table = makeCRC32Table()
-function crc32 (arrBuf) { // Calculate a CRC32
-    let buf = new Uint8Array(arrBuf)
-    let out = 0 ^ -1
-    for (let i = 0; i < buf.byteLength; i++) out = (out >>> 8) ^ crc32Table[(out ^ buf[i]) & 0xFF]
-    return (out ^ -1) >>> 0
-}
-const base64Table = []
-for (let c = 65; c <= 90; c++) base64Table.push(c) // A-Z
-for (let c = 97; c <= 122; c++) base64Table.push(c) // a-z
-for (let c = 48; c <= 57; c++) base64Table.push(c) // 0-9
-base64Table.push(...["+", "/"].map(val => val.charCodeAt(0))) // +,/
-function decodeBase64 (arrBuf, urlMode = false) { // Decode Base64 (The urlMode argument specifies whether certain special characters can be replaced by others automatically)
-    let buf = new Uint8Array(arrBuf)
-    let outArr = []
-
-    let numbers = [...buf]
-    if (urlMode) numbers = numbers.map(val => val == "-".charCodeAt(0) ? "+".charCodeAt(0) : val).map(val => val == "_".charCodeAt(0) ? "/".charCodeAt(0) : val) // Replace certain special characters
-    for (let i = 0; i < numbers.length; i++) { // Check for invalid data
-        if (base64Table.indexOf(numbers[i]) == -1 && numbers[i] != "=".charCodeAt(0)) throw new Error("[BASE64] Invalid data (Data contains invalid characters)")
-    }
-    let binStr = numbers.map(val => base64Table.indexOf(val)).filter(val => val > -1).map(val => val.toString(2).padStart(6, "0")).map(val => val.substring(val.length - 6)).join("") // Binary string
-
-    for (let i = 0; i < binStr.length; i += 8) { // Split the binary string
-        let bin = binStr.substring(i, i + 8)
-        if (bin.length < 8) break // Discard small last group
-        outArr.push(parseInt(bin, 2)) // Parse number from binary
-    }
-    return new Uint8Array(outArr).buffer // Make an ArrayBuffer from an Array
-}
-function xorWithKey (arrBuf, key) { // XOR
-    let buf = new Uint8Array(arrBuf)
-    buf = buf.map(val => val ^ key)
-    return buf.buffer
-}
 function zipFileDecompress (arrBuf) { // Decompress a .ZIP file (Does not support encryption)
     let structure = {}
     let buf = new Uint8Array(arrBuf)
@@ -388,4 +345,77 @@ function zipFileDecompress (arrBuf) { // Decompress a .ZIP file (Does not suppor
     }
 
     return structure
+}
+
+/* ***** COMPRESSION ***** */
+function zipFileCompress (structure) { // Compress a .ZIP file (Does not support encryption)
+}
+
+/* ***** DECOMPRESSION/COMPRESSION ***** */
+
+/* ***** DECODING ***** */
+function decodeBase64 (arrBuf, urlMode = false) { // Decode Base64 (The urlMode argument specifies whether certain special characters can be replaced by others automatically)
+    let buf = new Uint8Array(arrBuf)
+    let outArr = []
+
+    let numbers = [...buf]
+    if (urlMode) numbers = numbers.map(val => val == "-".charCodeAt(0) ? "+".charCodeAt(0) : val).map(val => val == "_".charCodeAt(0) ? "/".charCodeAt(0) : val) // Replace certain special characters
+    for (let i = 0; i < numbers.length; i++) { // Check for invalid data
+        if (base64Table.indexOf(numbers[i]) == -1 && numbers[i] != "=".charCodeAt(0)) throw new Error("[BASE64] Invalid data (Data contains invalid characters)")
+    }
+    let binStr = numbers.map(val => base64Table.indexOf(val)).filter(val => val > -1).map(val => val.toString(2).padStart(6, "0")).map(val => val.substring(val.length - 6)).join("") // Binary string
+
+    for (let i = 0; i < binStr.length; i += 8) { // Split the binary string
+        let bin = binStr.substring(i, i + 8)
+        if (bin.length < 8) break // Discard small last group
+        outArr.push(parseInt(bin, 2)) // Parse number from binary
+    }
+    return new Uint8Array(outArr).buffer // Make an ArrayBuffer from an Array
+}
+
+/* ***** ENCODING ***** */
+function encodeBase64 (arrBuf) { // Encode Base64
+    let buf = new Uint8Array(arrBuf)
+    let outArr = []
+    
+    let binStr = [...buf].map(val => val.toString(2).padStart(8, "0")).join("")
+    for (let i = 0; i < binStr.length; i += 6) {
+        let padding = "0".repeat(Math.max(0, (i + 6) - binStr.length)) // Pad small last group
+        let bin = binStr.slice(i, i + 6) + padding
+        outArr.push(base64Table[parseInt(bin, 2)]) // Find the character representing the binary string part
+    }
+    let padding = new Array(4 - ((outArr.length % 4) || 4)).fill(61) // Pad output
+    outArr.push(...padding)
+    return new Uint8Array(outArr).buffer // Make an ArrayBuffer from an Array
+}
+
+/* ***** DECODING/ENCODING ***** */
+const base64Table = []
+for (let c = 65; c <= 90; c++) base64Table.push(c) // A-Z
+for (let c = 97; c <= 122; c++) base64Table.push(c) // a-z
+for (let c = 48; c <= 57; c++) base64Table.push(c) // 0-9
+base64Table.push(...["+", "/"].map(val => val.charCodeAt(0))) // +,/
+function xorWithKey (arrBuf, key) { // XOR
+    let buf = new Uint8Array(arrBuf)
+    buf = buf.map(val => val ^ key)
+    return buf.buffer
+}
+
+/* ***** UTIL ***** */
+const crc32Table = makeCRC32Table()
+function makeCRC32Table () { // Initializes the CRC32 table
+    let crc32Table = []
+    let temp = null
+    for (let i = 0; i < 256; i++) {
+        temp = i
+        for (let j = 0; j < 8; j++) temp = ((temp & 1) ? (0xEDB88320 ^ (temp >>> 1)) : (temp >>> 1))
+        crc32Table[i] = temp
+    }
+    return crc32Table
+}
+function crc32 (arrBuf) { // Calculate a CRC32
+    let buf = new Uint8Array(arrBuf)
+    let out = 0 ^ -1
+    for (let i = 0; i < buf.byteLength; i++) out = (out >>> 8) ^ crc32Table[(out ^ buf[i]) & 0xFF]
+    return (out ^ -1) >>> 0
 }
