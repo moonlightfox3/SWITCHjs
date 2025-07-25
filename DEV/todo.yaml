@@ -1,13 +1,13 @@
 explorer.html
-    allow downloading folders in addition to files
+    fix sarc display
+        shows slashes instead of real folders
+        does this happen for any other archive types?
 
+    allow downloading folders in addition to files
     add file viewers
         text
         json
         csv
         hex
 converters
-    allow resaving same Nintendo file type
-        choose little or big endian
-        does not allow importing new file (too complicated for now)
-        eventually, allow converting common file types to Nintendo file types
+    allow converting common file types to Nintendo file types
