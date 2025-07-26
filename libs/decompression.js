@@ -348,7 +348,73 @@ function zipFileDecompress (arrBuf) { // Decompress a .ZIP file (Does not suppor
 }
 
 /* ***** COMPRESSION ***** */
-function zipFileCompress (structure) { // Compress a .ZIP file (Does not support encryption)
+function zipFileCompress (structure) { // Compress a .ZIP file (Does not support encryption) - Note: Not actually using compression
+    function exploreStructure (structure, path = "") {
+        let keys = Object.keys(structure)
+        let names = [].concat(...keys.map(val => structure[val] instanceof ArrayBuffer ? {name: `${path}${val}`, val: structure[val]} : [{name: `${path}${val}/`, val: null}, ...exploreStructure(structure[val], `${path}${val}/`)]))
+        return names
+    }
+    let files = exploreStructure(structure)
+
+    let localFileHeaders = []
+    let centralFileHeaders = []
+    let tempOffset = 0x00
+    for (let file of files) {
+        let crc = crc32(file.val), size = file.val?.byteLength ?? 0, nameLen = file.name.length
+        let crcArr = [crc & 0xFF, (crc >> 8) & 0xFF, (crc >> 16) & 0xFF, (crc >> 24) & 0xFF], sizeArr = [size & 0xFF, (size >> 8) & 0xFF, (size >> 16) & 0xFF, (size >> 24) & 0xFF]
+        let nameLenArr = [nameLen & 0xFF, (nameLen >> 8) & 0xFF]
+        localFileHeaders.push([
+            0x50, 0x4B, 0x03, 0x04, // magic
+            0x14, 0x00, // min extractor version
+            0x00, 0x00, 0x00, 0x00, // flags, compression method
+            0x00, 0x00, 0x00, 0x00, // last modification time/date
+            ...crcArr, // uncompressed data crc32
+            ...sizeArr, // compressed data size
+            ...sizeArr, // uncompressed data size
+            ...nameLenArr, // name length
+            0x00, 0x00, // extra data length
+            ...new TextEncoder().encode(file.name), // file name
+            ...new Uint8Array(file.val ?? 0), // file data
+        ])
+
+        let tempOffsetArr = [tempOffset & 0xFF, (tempOffset >> 8) & 0xFF, (tempOffset >> 16) & 0xFF, (tempOffset >> 24) & 0xFF]
+        centralFileHeaders.push([
+            0x50, 0x4B, 0x01, 0x02, // magic
+            0x14, 0x03, 0x14, 0x00, // compressor version, min extractor version
+            0x00, 0x00, 0x00, 0x00, // flags, compression method
+            0x00, 0x00, 0x00, 0x00, // last modification time/date
+            ...crcArr, // uncompressed data crc32
+            ...sizeArr, // compressed data size
+            ...sizeArr, // uncompressed data size
+            ...nameLenArr, // name length
+            0x00, 0x00, // extra data length
+            0x00, 0x00, // file comment length
+            0x00, 0x00, // file data disk
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // internal/external file attributes
+            ...tempOffsetArr, // offset to local file header from start of file disk
+            ...new TextEncoder().encode(file.name), // file name
+        ])
+        tempOffset += localFileHeaders.at(-1).length
+    }
+
+    let centralFileHeadersLengthArr = [centralFileHeaders.length & 0xFF, (centralFileHeaders.length >> 8) & 0xFF]
+    let centralHeadersSizeArr = [tempOffset & 0xFF, (tempOffset >> 8) & 0xFF, (tempOffset >> 16) & 0xFF, (tempOffset >> 24) & 0xFF]
+    let endRecord = [
+        0x50, 0x4B, 0x05, 0x06, // magic
+        0x00, 0x00, 0x00, 0x00, // this disk, central headers start disk
+        ...centralFileHeadersLengthArr, // number of central headers on this disk
+        ...centralFileHeadersLengthArr, // number of central headers
+        ...centralHeadersSizeArr, // size of all central headers
+        ...centralHeadersSizeArr, // central headers start location
+        0x00, 0x00, // comment length
+    ]
+
+    let arrBuf = new Uint8Array([
+        ...[].concat(...localFileHeaders),
+        ...[].concat(...centralFileHeaders),
+        ...endRecord,
+    ]).buffer
+    return arrBuf
 }
 
 /* ***** DECOMPRESSION/COMPRESSION ***** */

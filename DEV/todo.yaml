@@ -1,6 +1,5 @@
 explorer.html
     allow downloading folders in addition to files
-
     add file viewers
         text
         json
@@ -8,4 +7,3 @@ explorer.html
         hex
 converters
     allow converting common file types to Nintendo file types
-    try to make own zip creation code

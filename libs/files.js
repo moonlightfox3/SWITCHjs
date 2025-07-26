@@ -108,20 +108,9 @@ async function exportFile (buf, name, ext, excludeAcceptAllOption = false) {
     await writable.write(buf)
     await writable.close()
 }
-async function exportZip (obj, name) {
-    let zip = new JSZip()
-    exportZip_parseObj(zip, obj)
-    let data = await zip.generateAsync({type: "blob"})
-    await exportFile(data, name, "zip")
-}
-function exportZip_parseObj (zip, obj) {
-    for (let key of Object.keys(obj)) {
-        let content = obj[key]
-        if (typeof content.resize != "function") {
-            let folder = zip.folder(key)
-            exportZip_parseObj(folder, content)
-        } else zip.file(key, content)
-    }
+async function exportZip (structure, name, excludeAcceptAllOption = false) {
+    let data = zipFileCompress(structure)
+    await exportFile(data, name, "zip", excludeAcceptAllOption)
 }
 
 function getFileType (fileBuf, fileExt) {
