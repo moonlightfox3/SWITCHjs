@@ -1,5 +1,6 @@
-// fallbacks
+// polyfills for showOpenFilePicker and showSaveFilePicker
 if (window.showOpenFilePicker == undefined) {
+    console.warn("Using polyfill for showOpenFilePicker()")
     window.showOpenFilePicker = async function (options) {
         let el = document.createElement("input"); el.type = "file"
         el.multiple = options?.multiple ?? false
@@ -34,6 +35,7 @@ if (window.showOpenFilePicker == undefined) {
     }
 }
 if (window.showSaveFilePicker == undefined) {
+    console.warn("Using polyfill for showSaveFilePicker()")
     window.showSaveFilePicker = async function (options) {
         let el = document.createElement("a")
         el.download = options?.suggestedName ?? "download"
