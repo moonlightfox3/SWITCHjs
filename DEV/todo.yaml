@@ -1,3 +1,5 @@
+all
+    add file drag/drop to import
 explorer.html
     allow downloading folders in addition to files
     add file viewers
