@@ -17,6 +17,7 @@
 <script src="./bcsv.js"></script>
 <script src="./msbt.js"></script>
 <script src="./bmg.js"></script>
+<script src="./barslist.js"></script>
 <script>
     oncontextmenu = ev => ev.preventDefault()
 
@@ -28,6 +29,7 @@
         "BCSV",
         "MSBT",
         "BMG",
+        "BARSLIST",
 
         "?",
     ]
@@ -39,6 +41,7 @@
         decompressFromBCSV,
         decompressFromMSBT,
         decompressFromBMG,
+        decompressFromBARSLIST,
     ]
     let fileInTypeTable = [
         inFileTypesYaz0,
@@ -48,6 +51,7 @@
         inFileTypesBCSV,
         inFileTypesMSBT,
         inFileTypesBMG,
+        inFIleTypesBARSLIST,
     ]
     let fileOutTypeTable = [
         outFileTypeYaz0,
@@ -57,6 +61,7 @@
         outFileTypeBCSV,
         outFileTypeMSBT,
         outFileTypeBMG,
+        outFileTypeBARSLIST,
     ]
     
     let fileDataTable = []
