@@ -58,14 +58,12 @@ if (window.showSaveFilePicker == undefined) {
 }
 
 async function importFile (exts, excludeAcceptAllOption = false) {
-    for (let index in exts) exts[index] = `.${exts[index]}`
-
     let [handle] = await showOpenFilePicker({
         multiple: false,
         excludeAcceptAllOption,
         types: [{
             accept: {
-                "*/*": exts,
+                "*/*": exts.map(val => `.${val}`),
             },
             description: ":",
         }],
