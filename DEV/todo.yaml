@@ -1,11 +1,4 @@
 all
     add file drag/drop to import
 explorer.html
-    allow downloading folders in addition to files
-    add file viewers
-        text
-        json
-        csv
-        hex
-converters
-    allow converting common file types to Nintendo file types
+    allow downloading folders (as .zip) in addition to files
