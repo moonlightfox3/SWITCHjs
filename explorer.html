@@ -110,8 +110,7 @@
         return ul
     }
     function addFile (ul, buf, name, ext, dataIndex) {
-        let typeFileBuf = new FileBuf(buf)
-        let type = getFileType(typeFileBuf, ext).name
+        let type = getFileType(new FileBuf(buf), ext).name
         let funcIndex = fileTypeMappings.findIndex(val => type.startsWith(val))
 
         let li = document.createElement("li")
@@ -122,7 +121,7 @@
         span.onclick = function () {
             let funcIndex = +this.dataset.funcIndex
             if (fileTypeMappings[funcIndex] == "?") {
-                let overrideFuncName = prompt(`Override file type (${fileTypeMappings}):`, "")
+                let overrideFuncName = prompt(`Override file type (${fileTypeMappings.join(", ")}):`, "")
                 funcIndex = fileTypeMappings.findIndex(val => overrideFuncName == val)
 
                 if (funcIndex == -1 || overrideFuncName == "?") return
@@ -135,16 +134,8 @@
             let result = fileDataTypeFunctionTable[funcIndex](fileBuf)
             if (result != undefined) {
                 let result_isBuf = typeof result.resize == "function"
-                let resultExt = fileOutTypeTable[funcIndex]
-                
                 if (result_isBuf) {
-                    let name = fileNameTable[dataIndex]
-                    let ext = ""
-                        let nameDotIndex = name.lastIndexOf(".")
-                        if (nameDotIndex != -1) {
-                            ext = name.substring(nameDotIndex + 1)
-                            name = name.substring(0, nameDotIndex)
-                        }
+                    let resultExt = getFileType(new FileBuf(result), fileOutTypeTable[funcIndex]).ext
 
                     let list = addList(this.parentElement)
                     addFile(list, result, `<i>${name}</i>`, resultExt, fileTableAddIndex)
