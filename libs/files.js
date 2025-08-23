@@ -201,6 +201,16 @@ function getFileType (fileBuf, fileExt) {
         ext = "bfsar"
     }
     
+    else if (fileBuf.str(0x00, 0x04) == "FGRP") {
+        let mode = null
+        let byteOrder = fileBuf.int(0x04, IntSize.U16, Endian.BIG)
+            byteOrder = byteOrder.toString(16)
+            if (byteOrder == "feff") mode = Endian.BIG
+            else if (byteOrder == "fffe") mode = Endian.LITTLE
+        name = `BFGRP_${mode}`
+        ext = "bfgrp"
+    }
+    
     else {
         name = "?"
         ext = "bin"

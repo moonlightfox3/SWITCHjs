@@ -1,0 +1,23 @@
+<!doctype html>
+<title>BFGRP (.bfgrp) to ZIP (.zip) | SWITCHjs</title>
+<link rel="stylesheet" href="./style/style.css">
+<link rel="icon" href="./style/icon.png">
+<script src="../libs/profile.js"></script>
+
+<button id="openBtn" autofocus>BFGRP (.bfgrp) to ZIP (.zip)</button>
+<button id="downloadBtn" disabled>Download result</button>
+
+<script src="../libs/filebuf.js"></script>
+<script src="../libs/files.js"></script>
+<script src="../libs/decompression.js"></script>
+<script src="../bfgrp.js"></script>
+<script>
+    openBtn.onclick = async function () {
+        await decompressFileFromBFGRP()
+        downloadBtn.disabled = false
+        downloadBtn.focus()
+    }
+    downloadBtn.onclick = async function () {
+        await downloadResultBFGRP()
+    }
+</script>
