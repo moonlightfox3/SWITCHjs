@@ -13,7 +13,8 @@ BMG: [Luma's Workshop](https://www.lumasworkshop.com/wiki/BMG_(File_Format)), [C
 BARSLIST: [Nintendo File Formats](https://nintendo-formats.com/libs/aal/barslist.html) \
 BFSAR: [Nintendo File Formats](https://nintendo-formats.com/libs/nw/bfsar.html), [Nintendo File Formats](https://nintendo-formats.com/libs/nw/sound.html) \
 BFGRP: [Nintendo File Formats](https://nintendo-formats.com/libs/nw/bfgrp.html), [Nintendo File Formats](https://nintendo-formats.com/libs/nw/sound.html) \
-BFWAR: [Nintendo File Formats](https://nintendo-formats.com/libs/nw/bfwar.html), [Nintendo File Formats](https://nintendo-formats.com/libs/nw/sound.html)
+BFWAR: [Nintendo File Formats](https://nintendo-formats.com/libs/nw/bfwar.html), [Nintendo File Formats](https://nintendo-formats.com/libs/nw/sound.html) \
+BFWSD: [Nintendo File Formats](https://nintendo-formats.com/libs/nw/bfwsd.html), [Nintendo File Formats](https://nintendo-formats.com/libs/nw/sound.html)
 
 ### Credits: These are the pages I used to create my binary file parsing library stored here (/libs/filebuf.js).
 Floating-point number parsing: [An article in Medium's TDS Archive written by Oleksii Trekhleb](https://medium.com/towards-data-science/binary-representation-of-the-floating-point-numbers-77d7364723f1) \

@@ -21,6 +21,7 @@
 <script src="./bfsar.js"></script>
 <script src="./bfgrp.js"></script>
 <script src="./bfwar.js"></script>
+<script src="./bfwsd.js"></script>
 <script>
     oncontextmenu = ev => ev.preventDefault()
 
@@ -36,6 +37,7 @@
         "BFSAR",
         "BFGRP",
         "BFWAR",
+        "BFWSD",
 
         "?",
     ]
@@ -51,6 +53,7 @@
         decompressFromBFSAR,
         decompressFromBFGRP,
         decompressFromBFWAR,
+        decompressFromBFWSD,
     ]
     let fileInTypeTable = [
         inFileTypesYaz0,
@@ -64,6 +67,7 @@
         inFileTypesBFSAR,
         inFileTypesBFGRP,
         inFileTypesBFWAR,
+        inFileTypesBFWSD,
     ]
     let fileOutTypeTable = [
         outFileTypeYaz0,
@@ -77,6 +81,7 @@
         outFileTypeBFSAR,
         outFileTypeBFGRP,
         outFileTypeBFWAR,
+        outFileTypeBFWSD,
     ]
     
     let fileDataTable = []
