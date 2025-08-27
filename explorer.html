@@ -146,6 +146,7 @@
                 let result_isBuf = typeof result.resize == "function"
                 if (result_isBuf) {
                     let resultExt = getFileType(new FileBuf(result), fileOutTypeTable[funcIndex]).ext
+                    if (resultExt == "bin") resultExt = fileOutTypeTable[funcIndex]
 
                     let list = addList(this.parentElement)
                     addFile(list, result, `<i>${name}</i>`, resultExt, fileTableAddIndex)
