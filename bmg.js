@@ -115,7 +115,7 @@ function bmg_parseText (fileBuf, numMode, id) {
                 name = Math.round(fileBuf.int(offset + 12, IntSize.U32, Endian.BIG) / 256)
             } else FileBuf.expectVal(0, 1, `Unknown escape ID [${idData_0}, ${idData_1}] in message ${id}`)
             let type = bmg_defs.names[idData_1]
-            if (bmg_defs[type] != undefined) name = bmg_defs[type][name] || `?${name}`
+            if (bmg_defs[type] != undefined) name = bmg_defs[type][name] || `unknown_${name}`
             text += `<${type}=${name}>`
             i += idData_0
         } else {
@@ -205,6 +205,27 @@ let bmg_defs = {
         "52": "butler",
         "53": "ticocomet",
         "54": "question",
+        "55": "?8",
+        "56": "?9",
+        "57": "?10",
+        "58": "?11",
+        "59": "?12",
+        "60": "?13",
+        "61": "?14",
+        "62": "?15",
+        "63": "?16",
+        "64": "?17",
+        "65": "?18",
+        "66": "?19",
+        "67": "?20",
+        "68": "?21",
+        "69": "?22",
+        "70": "?23",
+        "71": "?24",
+        "72": "?25",
+        "73": "?26",
+        "74": "?27",
+        "75": "?28",
     },
     size: {
         "0": "small",
@@ -215,6 +236,7 @@ let bmg_defs = {
         "0": "name",
         "1": "yell",
         "2": "stache",
+        "256": "?1",
     },
     color: {
         "0": "black",
