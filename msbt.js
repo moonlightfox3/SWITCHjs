@@ -110,6 +110,10 @@ function decompressFromMSBT (fileBuf) {
                         if (strOutPart.length > 0) strOut.push(strOutPart), strOutPart = ""
                         messages[j] = strOut
                     }
+                } else if (id == "ATR1") {
+                    let attributeCount = block.int(0x00, IntSize.U32, numMode)
+                    let singleAttributeSize = block.int(0x04, IntSize.U32, numMode)
+                        FileBuf.expectVal(singleAttributeSize, 0, "Not implemented (Attributes block data)")
                 } else FileBuf.expectVal(0, 1, "Invalid or unknown block ID")
             srcBlockPointer = Math.ceil((srcBlockPointer + size) / 16) * 16
         }
