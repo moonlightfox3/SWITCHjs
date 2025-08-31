@@ -13,6 +13,8 @@ async function downloadResultBFWAR () {
 }
 let bfwar_files = null
 function decompressFromBFWAR (fileBuf) {
+    bfwar_files = null
+    
     let numMode = null
     let header = fileBuf.buf(0x00, 0x14)
         let header_name = header.str(0x00, 0x04)

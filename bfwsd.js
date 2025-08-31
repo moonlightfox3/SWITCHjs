@@ -31,6 +31,8 @@ const bfwsd_fileTypeIds = [
     ["GROUP"],
 ]
 function decompressFromBFWSD (fileBuf) {
+    bfwsd_data = null
+    
     let numMode = null
     let header = fileBuf.buf(0x00, 0x14)
         let header_name = header.str(0x00, 0x04)

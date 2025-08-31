@@ -34,6 +34,11 @@ const bfsar_fileTypeIds = [
     ["GROUP"],
 ]
 function decompressFromBFSAR (fileBuf) {
+    bfsar_stringTable = null
+    bfsar_searchTreeStartIndex = null
+    bfsar_searchTree = null
+    bfsar_fileInfoData = null
+
     let numMode = null
     let header = fileBuf.buf(0x00, 0x14)
         let header_name = header.str(0x00, 0x04)

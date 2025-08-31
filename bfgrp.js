@@ -32,6 +32,9 @@ const bfgrp_fileTypeIds = [
     ["GROUP"],
 ]
 function decompressFromBFGRP (fileBuf) {
+    bfgrp_files = null
+    bfgrp_dependencies = null
+    
     let numMode = null
     let header = fileBuf.buf(0x00, 0x14)
         let header_name = header.str(0x00, 0x04)
