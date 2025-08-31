@@ -25,13 +25,13 @@ class FileBuf {
     pointer = 0
     constructor (data) { this.data = data }
 
-    buf (offset, size) {
+    buf (offset = this.pointer, size = IntSize.U32) {
         let outBuf = this.data.slice(offset, offset + size)
         let outCls = new FileBuf(outBuf)
         this.pointer += size
         return outCls
     }
-    arr (offset, size, endian = Endian.BIG) {
+    arr (offset = this.pointer, size = IntSize.U32, endian = Endian.BIG) {
         let inBuf = this.buf(offset, size)
         let outArr = new Uint8Array(inBuf.data)
         if (endian == Endian.BIG) null
@@ -39,7 +39,7 @@ class FileBuf {
         return outArr
     }
     
-    str (offset, size, endian = Endian.BIG, encoding = "utf-8") {
+    str (offset = this.pointer, size = IntSize.U32, endian = Endian.BIG, encoding = "utf-8") {
         let inCls = this.buf(offset, size)
         let inBuf = inCls.data
         let outStr = new TextDecoder(encoding).decode(inBuf)
@@ -48,7 +48,7 @@ class FileBuf {
         return outStr
     }
 
-    int (offset, size, endian = Endian.BIG) {
+    int (offset = this.pointer, size = IntSize.U32, endian = Endian.BIG) {
         let inCls = this.buf(offset, size)
         let inArr = inCls.arr(0, size, endian)
         let outStr = ""
@@ -56,7 +56,7 @@ class FileBuf {
         let outInt = parseInt(outStr, 16)
         return outInt
     }
-    byte (offset) {
+    byte (offset = this.pointer) {
         let inCls = this.buf(offset, 1)
         let outByte = inCls.int(0, IntSize.U8)
         return outByte
@@ -142,20 +142,20 @@ class FileBufWriter {
     pointer = 0
     constructor (data) { this.data = data }
     
-    buf (offset, inData) {
+    buf (offset = this.pointer, inData) {
         let thisArr = new Uint8Array(this.data)
         let inArr = new Uint8Array(inData)
         thisArr.set(inArr, offset)
         this.pointer += inArr.length
         return inArr.length
     }
-    arr (offset, inData) {
+    arr (offset = this.pointer, inData) {
         let inArr = new Uint8Array(inData)
         this.buf(offset, inArr)
         return inArr.length
     }
 
-    str (offset, inData, endian = Endian.BIG, encoding = "utf-8") {
+    str (offset = this.pointer, inData, endian = Endian.BIG, encoding = "utf-8") {
         let outArr = new TextEncoder(encoding).encode(inData)
         if (endian == Endian.BIG) null
         else if (endian == Endian.LITTLE) outArr = outArr.reverse()
@@ -163,7 +163,7 @@ class FileBufWriter {
         return outArr.length
     }
     
-    int (offset, inData, endian = Endian.BIG, size = IntSize.U8) {
+    int (offset = this.pointer, inData, endian = Endian.BIG, size = IntSize.U8) {
         let inHex = inData.toString(16)
         let inLength = Math.ceil(inHex.length / 2)
         inHex = inHex.padStart(inLength * 2, "0")
@@ -177,7 +177,7 @@ class FileBufWriter {
         this.buf(offset, outArr.buffer)
         return inLength
     }
-    byte (offset, inData) {
+    byte (offset = this.pointer, inData) {
         let outBuf = new Uint8Array([inData]).buffer
         this.buf(offset, outBuf)
         return 1
