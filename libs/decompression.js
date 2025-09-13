@@ -339,9 +339,13 @@ function zipFileDecompress (arrBuf) { // Decompress a .ZIP file (Does not suppor
         let item = path.splice(-1, 1)[0]
 
         let currentPath = structure
-        for (let pathPart of path) currentPath = currentPath[pathPart]
-        if (isDir) currentPath[item] = {}
-        else currentPath[item] = data
+        for (let pathPart of path) {
+            if (currentPath[pathPart] == undefined) currentPath[pathPart] = {}
+            currentPath = currentPath[pathPart]
+        }
+        if (isDir) {
+            if (currentPath[item] == undefined) currentPath[item] = {}
+        } else currentPath[item] = data
     }
 
     return structure
