@@ -4,7 +4,7 @@ These tools (currently) can only convert files *from* Nintendo Switch formats in
 
 ### Credits: These are the wiki documentation pages I used to create these converters.
 YAZ0: [amnoid.de](http://www.amnoid.de/gc/yaz0.txt) \
-SARC: [Custom Mario Kart 8 Wiki](https://mk8.tockdom.com/wiki/SARC_(File_Format)) \
+SARC: [Custom Mario Kart 8 Wiki](https://mk8.tockdom.com/wiki/SARC_(File_Format)), [Nintendo File Formats](https://nintendo-formats.com/libs/sead/sarc.html) \
 RARC: [Custom Mario Kart Wiiki](https://wiki.tockdom.com/wiki/RARC_(File_Format)) \
 BYML: [ZeldaMods](https://zeldamods.org/wiki/BYML) \
 BCSV: [Luma's Workshop](https://www.lumasworkshop.com/wiki/BCSV_(File_format)) \

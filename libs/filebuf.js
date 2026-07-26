@@ -112,6 +112,14 @@ class FileBuf {
         if (!isPositive) outInt *= -1
         return outInt
     }
+    static sign_extend (inVal, size = IntSize.U8, outSize = IntSize.U8) {
+        let inBin = inVal.toString(2).padStart(size * 8, "0")
+        let signBit = inBin[0]
+
+        let outBin = inBin.padStart(outSize * 8, signBit)
+        let outInt = parseInt(outBin, 2)
+        return outInt
+    }
     static nibble_byte (inVal, offset = 0) {
         let outNibble = (inVal >> (4 * (1 - offset))) & 0b00001111
         return outNibble

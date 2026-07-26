@@ -33,8 +33,7 @@ function decompressFromSARC (fileBuf) {
             FileBuf.expectVal(sfat_name, "SFAT", "SFAT header does not start with 'SFAT'")
         let sfat_headerLength = sfat.int(0x04, IntSize.U16, numMode)
             FileBuf.expectVal(sfat_headerLength, 0x0C, "SFAT header states incorrect size")
-        let sfat_hashKey = sfat.int(0x08, IntSize.U32, numMode)
-            FileBuf.expectVal(sfat_hashKey, 0x65, "SFAT header states incorrect hash key")
+        let sfat_hashKey = sfat.int(0x08, IntSize.U32, numMode) // Typically 0x65 (For official files)
         let sfat_nodeCount = sfat.int(0x06, IntSize.U16, numMode)
     let sfatNodes = fileBuf.buf(0x20, sfat_nodeCount * 0x10)
         let sfatNodesList = new Array(sfat_nodeCount)
@@ -42,10 +41,17 @@ function decompressFromSARC (fileBuf) {
             let node = sfatNodes.buf(i * 0x10, 0x10)
             sfatNodesList[i] = {
                 fileNameHash: node.int(0x00, IntSize.U32, numMode),
-                fileAttributes: node.int(0x04, IntSize.U32, numMode),
                 fileDataStart: node.int(0x08, IntSize.U32, numMode),
                 fileDataEnd: node.int(0x0C, IntSize.U32, numMode),
             }
+            if (numMode == Endian.LITTLE) {
+                sfatNodesList[i].fileNameTableOffset = node.int(0x04, IntSize.U24, numMode) * 0x04
+                sfatNodesList[i].fileNameHashIndex = node.byte(0x07) // Starts at 1
+            } else if (numMode == Endian.BIG) {
+                sfatNodesList[i].fileNameHashIndex = node.byte(0x04) // Starts at 1
+                sfatNodesList[i].fileNameTableOffset = node.int(0x05, IntSize.U24, numMode) * 0x04
+            }
+            sfatNodesList[i].hasFileName = sfatNodesList[i].fileNameTableOffset != 0x00 || sfatNodesList[i].fileNameHashIndex != 0x00
         }
         let sfatNodesEnd = 0x20 + (sfat_nodeCount * 0x10)
     let sfnt = fileBuf.buf(sfatNodesEnd, sfatNodesEnd + 0x08)
@@ -54,25 +60,27 @@ function decompressFromSARC (fileBuf) {
         let sfnt_headerLength = sfnt.int(0x04, IntSize.U16, numMode)
             FileBuf.expectVal(sfnt_headerLength, 0x08, "SFNT header states incorrect size")
         let sfnt_unused = sfnt.int(0x06, IntSize.U16, numMode)
-    let fileNames = fileBuf.buf(sfatNodesEnd + 0x08, sarc_dataOffset - (sfatNodesEnd + 0x08))
-        let fileNamesList = new Array(sfat_nodeCount)
-        let fileNamesStr = fileNames.str(0x00, fileNames.data.byteLength)
-        fileNamesList = fileNamesStr.split("\x00")
-        fileNamesList = fileNamesList.map(val => val.replaceAll("\x00", ""))
-        fileNamesList = fileNamesList.filter(val => val != "")
+    let fileNames = fileBuf.buf(sfatNodesEnd + 0x08, sarc_dataOffset - (sfatNodesEnd + 0x08)) // Might end with padding
+        let fileNamesArr = new Uint8Array(fileNames.data)
     let fileDatas = fileBuf.buf(sarc_dataOffset, fileBuf.data.byteLength - sarc_dataOffset)
-        let fileDatasList = new Array(sfat_nodeCount)
-        for (let i = 0; i < sfat_nodeCount; i++) {
-            let node = sfatNodesList[i]
-            let dataStart = node.fileDataStart
-            let dataEnd = node.fileDataEnd
-            let fileData = fileDatas.buf(dataStart, dataEnd - dataStart)
-            fileDatasList[i] = fileData
-        }
     let outObj = {}
         for (let i = 0; i < sfat_nodeCount; i++) {
-            let data = fileDatasList[i].data
-            let name = fileNamesList[i].split("/")
+            let dataOffset = sfatNodesList[i].fileDataStart
+            let data = fileDatas.buf(dataOffset, sfatNodesList[i].fileDataEnd - dataOffset).data
+            let nameHash = sfatNodesList[i].fileNameHash
+            let name = [`NONAME_${nameHash.toString(16).toUpperCase().padStart(8, "0")}_${sfatNodesList[i].fileNameHashIndex}.bin`]
+
+            if (sfatNodesList[i].hasFileName) {
+                let nameOffset = sfatNodesList[i].fileNameTableOffset
+                name = fileNames.buf(nameOffset, fileNamesArr.indexOf(0x00, nameOffset) - nameOffset)
+
+                let hash = sarc_hashFileName(name, sfat_hashKey)
+                if (hash != nameHash) FileBuf.expectVal(0, 1, "Invalid file name hash")
+
+                name = name.str(0x00, name.data.byteLength)
+                name = name.split("/")
+            }
+
             let currentPath = outObj
             for (let namePart of name.slice(0, -1)) {
                 if (currentPath[namePart] == undefined) currentPath[namePart] = {}
@@ -81,4 +89,12 @@ function decompressFromSARC (fileBuf) {
             currentPath[name.at(-1)] = data
         }
     return outObj
+}
+function sarc_hashFileName (fileBuf, key) {
+    fileBuf = new Uint8Array(fileBuf.data)
+    key = BigInt(key)
+
+    let hash = 0n
+    for (let byte of fileBuf) hash = (hash * key) + BigInt(FileBuf.sign_extend(byte, IntSize.U8, IntSize.U32))
+    return Number(hash & 0xFFFFFFFFn)
 }
