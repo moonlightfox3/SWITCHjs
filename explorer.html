@@ -5,7 +5,7 @@
 <script src="./libs/profile.js"></script>
 
 <button id="openBtn" autofocus>Import file</button><button id="openZipBtn">Import Zip file</button>
-<div id="structure"></div>
+<div id="structure" hidden>How to use: Click a file to convert/decompress it. Right-click a file to download it.</div>
 
 <script src="./libs/filebuf.js"></script>
 <script src="./libs/files.js"></script>
@@ -22,11 +22,12 @@
 <script src="./bfgrp.js"></script>
 <script src="./bfwar.js"></script>
 <script src="./bfwsd.js"></script>
+<script src="./bcd.js"></script>
 <script>
     oncontextmenu = ev => ev.preventDefault()
 
     let fileTypeMappings = [
-        "Yaz0",
+        "YAZ0",
         "SARC",
         "RARC",
         "BYML",
@@ -38,11 +39,12 @@
         "BFGRP",
         "BFWAR",
         "BFWSD",
+        "BCD",
 
         "?",
     ]
     let fileDataTypeFunctionTable = [
-        decompressFromYaz0,
+        decompressFromYAZ0,
         decompressFromSARC,
         decompressFromRARC,
         decompressFromBYML,
@@ -54,9 +56,10 @@
         decompressFromBFGRP,
         decompressFromBFWAR,
         decompressFromBFWSD,
+        decompressFromBCD,
     ]
     let fileInTypeTable = [
-        inFileTypesYaz0,
+        inFileTypesYAZ0,
         inFileTypesSARC,
         inFileTypesRARC,
         inFileTypesBYML,
@@ -68,9 +71,10 @@
         inFileTypesBFGRP,
         inFileTypesBFWAR,
         inFileTypesBFWSD,
+        inFileTypesBCD,
     ]
     let fileOutTypeTable = [
-        outFileTypeYaz0,
+        outFileTypeYAZ0,
         outFileTypeSARC,
         outFileTypeRARC,
         outFileTypeBYML,
@@ -82,6 +86,7 @@
         outFileTypeBFGRP,
         outFileTypeBFWAR,
         outFileTypeBFWSD,
+        outFileTypeBCD,
     ]
     
     let fileDataTable = []
@@ -94,6 +99,7 @@
         let file = await importFile(fileInTypes)
         let buf = file.buf
 
+        structure.hidden = false
         let list = addList(structure)
         addFile(list, buf, file.name, file.ext, fileTableAddIndex)
         fileDataTable[fileTableAddIndex] = buf
@@ -107,6 +113,7 @@
         let file = await importFile(["zip"], true)
         let obj = zipFileDecompress(file.buf)
 
+        structure.hidden = false
         let list = addList(structure)
         addObj(list, obj)
 
@@ -132,9 +139,13 @@
             let funcIndex = +this.dataset.funcIndex
             if (fileTypeMappings[funcIndex] == "?") {
                 let overrideFuncName = prompt(`Override file type (${fileTypeMappings.join(", ")}):`, "")
-                funcIndex = fileTypeMappings.findIndex(val => overrideFuncName == val)
+                if (overrideFuncName == null || overrideFuncName == "?") return
 
-                if (funcIndex == -1 || overrideFuncName == "?") return
+                funcIndex = fileTypeMappings.findIndex(val => overrideFuncName == val)
+                if (funcIndex == -1) {
+                    alert("Invalid file type override.")
+                    return
+                }
                 this.innerHTML = `<b>[? - ${overrideFuncName}]</b> ${name}${ext != "" ? `.${ext}` : ``}`
             }
 
@@ -159,7 +170,6 @@
                 }
             }
 
-            this.style.cursor = "default"
             this.onclick = () => {}
         }
         span.oncontextmenu = function (ev) {

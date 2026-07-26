@@ -117,7 +117,7 @@ function getFileType (fileBuf, fileExt) {
 
     if (fileBuf.str(0x00, 0x04) == "Yaz0") {
         let mode = Endian.BIG
-        name = `Yaz0_${mode}`
+        name = `YAZ0_${mode}`
         ext = "szs"
     }
     
@@ -143,13 +143,11 @@ function getFileType (fileBuf, fileExt) {
     
     else if (fileBuf.str(0x00, 0x02) == "BY") {
         let mode = Endian.BIG
-        let ver = fileBuf.int(0x02, IntSize.U16, mode)
-        name = `BYML_${mode}_V${ver}`
+        name = `BYML_${mode}`
         ext = "byml"
     } else if (fileBuf.str(0x00, 0x02) == "YB") {
         let mode = Endian.LITTLE
-        let ver = fileBuf.int(0x02, IntSize.U16, mode)
-        name = `BYML_${mode}_V${ver}`
+        name = `BYML_${mode}`
         ext = "byml"
     }
 
@@ -227,6 +225,12 @@ function getFileType (fileBuf, fileExt) {
             else if (byteOrder == "fffe") mode = Endian.LITTLE
         name = `BFWSD_${mode}`
         ext = "bfwsd"
+    }
+
+    else if (fileBuf.str(0x0C, 0x04) == "SCDL") {
+        let mode = Endian.LITTLE
+        name = `BCD_${mode}`
+        ext = "bcd"
     }
     
     else {

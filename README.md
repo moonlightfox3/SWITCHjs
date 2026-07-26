@@ -14,7 +14,8 @@ BARSLIST: [Nintendo File Formats](https://nintendo-formats.com/libs/aal/barslist
 BFSAR: [Nintendo File Formats](https://nintendo-formats.com/libs/nw/bfsar.html), [Nintendo File Formats](https://nintendo-formats.com/libs/nw/sound.html) \
 BFGRP: [Nintendo File Formats](https://nintendo-formats.com/libs/nw/bfgrp.html), [Nintendo File Formats](https://nintendo-formats.com/libs/nw/sound.html) \
 BFWAR: [Nintendo File Formats](https://nintendo-formats.com/libs/nw/bfwar.html), [Nintendo File Formats](https://nintendo-formats.com/libs/nw/sound.html) \
-BFWSD: [Nintendo File Formats](https://nintendo-formats.com/libs/nw/bfwsd.html), [Nintendo File Formats](https://nintendo-formats.com/libs/nw/sound.html)
+BFWSD: [Nintendo File Formats](https://nintendo-formats.com/libs/nw/bfwsd.html), [Nintendo File Formats](https://nintendo-formats.com/libs/nw/sound.html) \
+BCD: [Nintendo File Formats](https://nintendo-formats.com/games/smm2/level.html), [NintendoClients](https://github.com/Kinnay/NintendoClients/wiki/ENL-Key-Generation), [tiny-AES-c](https://github.com/kokke/tiny-AES-c)
 
 ### Credits: These are the pages I used to create my binary file parsing library stored here (/libs/filebuf.js).
 Floating-point number parsing: [An article in Medium's TDS Archive written by Oleksii Trekhleb](https://medium.com/towards-data-science/binary-representation-of-the-floating-point-numbers-77d7364723f1) \

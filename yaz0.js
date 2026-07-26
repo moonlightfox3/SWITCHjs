@@ -1,20 +1,20 @@
-let resultYaz0 = null
-let resultNameYaz0 = null
-let inFileTypesYaz0 = ["szs", "arc"]
-let outFileTypeYaz0 = "bin"
-async function decompressFileFromYaz0 () {
-    let file = await importFile(inFileTypesYaz0)
+let resultYAZ0 = null
+let resultNameYAZ0 = null
+let inFileTypesYAZ0 = ["szs", "arc"]
+let outFileTypeYAZ0 = "bin"
+async function decompressFileFromYAZ0 () {
+    let file = await importFile(inFileTypesYAZ0)
     let fileBuf = new FileBuf(file.buf)
-    resultYaz0 = decompressFromYaz0(fileBuf)
-    resultNameYaz0 = file.name
+    resultYAZ0 = decompressFromYAZ0(fileBuf)
+    resultNameYAZ0 = file.name
 }
-async function downloadResultYaz0 () {
-    await exportFile(resultYaz0, resultNameYaz0, outFileTypeYaz0)
+async function downloadResultYAZ0 () {
+    await exportFile(resultYAZ0, resultNameYAZ0, outFileTypeYAZ0)
 }
-function decompressFromYaz0 (fileBuf) {
+function decompressFromYAZ0 (fileBuf) {
     let header = fileBuf.buf(0x00, 0x10)
         let header_name = header.str(0x00, 0x04)
-            FileBuf.expectVal(header_name, "Yaz0", "Yaz0 header does not start with 'Yaz0'")
+            FileBuf.expectVal(header_name, "Yaz0", "YAZ0 header does not start with 'Yaz0'")
         let header_outSize = header.int(0x04, IntSize.U32, Endian.BIG)
         let header_unused = header.int(0x08, IntSize.U16, Endian.BIG)
     let src = fileBuf.buf(0x10, fileBuf.data.byteLength - 0x10)

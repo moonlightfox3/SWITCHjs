@@ -1,23 +1,23 @@
 <!doctype html>
-<title>YAZ0 (.szs, .arc) to BIN (.bin) | SWITCHjs</title>
+<title>BCD (.bcd) to BIN (.bin) | SWITCHjs</title>
 <link rel="stylesheet" href="./style/style.css">
 <link rel="icon" href="./style/icon.png">
 <script src="../libs/profile.js"></script>
 
-<button id="openBtn" autofocus>YAZ0 (.szs, .arc) to BIN (.bin)</button>
+<button id="openBtn" autofocus>BCD (.bcd) to BIN (.bin)</button>
 <button id="downloadBtn" disabled>Download result</button>
 
 <script src="../libs/filebuf.js"></script>
 <script src="../libs/files.js"></script>
 <script src="../libs/decompression.js"></script>
-<script src="../yaz0.js"></script>
+<script src="../bcd.js"></script>
 <script>
     openBtn.onclick = async function () {
-        await decompressFileFromYAZ0()
+        await decompressFileFromBCD()
         downloadBtn.disabled = false
         downloadBtn.focus()
     }
     downloadBtn.onclick = async function () {
-        await downloadResultYAZ0()
+        await downloadResultBCD()
     }
 </script>
